@@ -1,0 +1,44 @@
+<div style="display: grid; gap: 1em">
+  <ng-container
+    [ngSwitch]="activity.activityType"
+    *ngFor="let activity of activity$ | async as a"
+  >
+    <ng-container *ngSwitchCase="activityType.userTask">
+      <custom-card
+        *ngIf="(activity.user) as u"
+        glyphicon="user"
+        headerTitle="{{ u.firstName }} {{ u.lastName }}"
+        headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      >
+        <ng-container
+          *ngIf="activity.parentUserTaskActivity as a; else parentTask"
+        >
+          Moves <b>{{ activity.activityName }}</b> to
+          <b>{{ a.activityName }}</b>
+        </ng-container>
+
+        <ng-template #parentTask>
+          Start <b>{{ activity.activityName }}</b>
+        </ng-template>
+      </custom-card>
+    </ng-container>
+
+    <custom-card
+      headerTitle="Start event"
+      glyphicon="log-in"
+      headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      *ngSwitchCase="activityType.startEvent"
+    >
+      Start
+    </custom-card>
+
+    <custom-card
+      headerTitle="End event"
+      glyphicon="record"
+      headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      *ngSwitchCase="activityType.endEvent"
+    >
+      End
+    </custom-card>
+  </ng-container>
+</div>
