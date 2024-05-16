@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Observable, from, map, mergeMap, of, switchMap, toArray } from "rxjs";
+import { Observable, concat, map, of, switchMap, toArray } from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -36,36 +36,26 @@ export class ActivityHistoryComponent implements OnInit {
         })
       ),
       switchMap((activity) =>
-        from(activity).pipe(
-          mergeMap((_activity, i) =>
-            (_activity.assignee
+        concat(
+          ...activity.map((activity) =>
+            activity.assignee
               ? this.userService
-                  .findOneUser(_activity.assignee)
-                  .pipe(map((user) => ({ ..._activity, user })))
-              : of(_activity)
-            ).pipe(
-              map((_activity) => ({
-                ..._activity,
-                parentUserTaskActivity: activity
-                  .slice((i || 0) - 1)
-                  .find(
-                    ({ activityType }) => activityType === ActivityType.userTask
-                  ),
-              }))
-            )
+                  .findOneUser(activity.assignee)
+                  .pipe(map((user) => ({ ...activity, user })))
+              : of(activity)
           )
+        ).pipe(
+          map((_activity, i) => ({
+            ..._activity,
+            parentUserTaskActivity: activity
+              .slice(i + 1)
+              .find(
+                ({ activityType }) => activityType === ActivityType.userTask
+              ),
+          }))
         )
       ),
-      toArray(),
-      map((activity) =>
-        activity.sort(({ endTime: asc, activityType }, { endTime: desc }) =>
-          new Date(desc).getTime() < new Date(asc).getTime()
-            ? activityType !== ActivityType.userTask
-              ? 1
-              : -1
-            : 1
-        )
-      )
+      toArray()
     );
   }
 }
