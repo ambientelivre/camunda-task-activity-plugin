@@ -10,6 +10,9 @@ export class CardComponent {
   headerTitle!: string;
 
   @Input()
+  altHeaderTitle!: string;
+
+  @Input()
   headerSubTitle!: string;
 
   @Input()

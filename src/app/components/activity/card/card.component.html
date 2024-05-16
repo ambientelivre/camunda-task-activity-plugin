@@ -8,8 +8,14 @@
   </div>
   <div class="media-body">
     <h4 class="media-heading">
-      {{ headerTitle
-      }}<small style="margin-left: 1em">{{ headerSubTitle }}</small>
+      <ng-container *ngIf="headerTitle; else altHeaderTitleRef">
+        {{ headerTitle }}</ng-container
+      >
+
+      <ng-template #altHeaderTitleRef>
+        <mark>{{ altHeaderTitle }}</mark>
+      </ng-template>
+      <small style="margin-left: 1em">{{ headerSubTitle }}</small>
     </h4>
 
     <ng-content></ng-content>
