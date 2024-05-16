@@ -7,15 +7,18 @@ import { Activity } from "../../process-instance/activity/activity";
 import { ActivityService } from "../../process-instance/activity/activity.service";
 import { TaskService } from "../../process-instance/task/task.service";
 
+export type TaskActivity = Activity & {
+  user?: User;
+  parentUserTaskActivity?: number;
+};
+
 @Component({
   selector: "custom-activity-history",
   templateUrl: "./activity-history.component.html",
   styleUrls: ["./activity-history.component.css"],
 })
 export class ActivityHistoryComponent implements OnInit {
-  activity$: Observable<
-    (Activity & { user?: User; parentUserTaskActivity?: Activity })[]
-  >;
+  activity$: Observable<TaskActivity[]>;
   activityType = ActivityType;
 
   @Input() taskid!: string;
@@ -47,11 +50,12 @@ export class ActivityHistoryComponent implements OnInit {
         ).pipe(
           map((_activity, i) => ({
             ..._activity,
-            parentUserTaskActivity: activity
-              .slice(i + 1)
-              .find(
-                ({ activityType }) => activityType === ActivityType.userTask
-              ),
+            parentUserTaskActivity: activity.findIndex(
+              ({ activityType, parentActivityInstanceId }, i2) =>
+                i < i2 &&
+                activityType === ActivityType.userTask &&
+                parentActivityInstanceId === _activity.parentActivityInstanceId
+            ),
           }))
         )
       ),

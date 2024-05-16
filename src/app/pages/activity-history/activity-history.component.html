@@ -1,44 +1,74 @@
 <div style="display: grid; gap: 1em">
   <ng-container
     [ngSwitch]="activity.activityType"
-    *ngFor="let activity of activity$ | async as a"
+    *ngFor="let activity of activity$ | async as a; let i = index"
   >
     <ng-container *ngSwitchCase="activityType.userTask">
       <custom-card
-        *ngIf="activity.user as u"
+        *ngIf="
+          !activity.endTime && a[activity.parentUserTaskActivity] as p;
+          else lastActivity
+        "
         glyphicon="user"
-        headerTitle="{{ u.firstName }} {{ u.lastName }}"
-        headerSubTitle="{{ activity.startTime | date : 'short' }}"
+        headerTitle="{{ p.user?.firstName }} {{ p.user?.lastName }}"
+        headerSubTitle="{{ activity.endTime | date : 'short' }}"
       >
-        <ng-container
-          *ngIf="activity.parentUserTaskActivity as p; else parentTask"
-        >
-          Moves <b>{{ p.activityName }}</b> to
-          <b>{{ activity.activityName }}</b>
-        </ng-container>
+        Moves <b>{{ p.activityName }}</b> to
+        <b>{{ activity.activityName }}</b></custom-card
+      >
 
-        <ng-template #parentTask>
-          Start <b>{{ activity.activityName }}</b>
-        </ng-template>
-      </custom-card>
+      <ng-template #lastActivity>
+        <custom-card
+          glyphicon="user"
+          headerTitle="{{ activity.user.firstName }} {{
+            activity.user.lastName
+          }}"
+          headerSubTitle="{{ activity.endTime | date : 'short' }}"
+        >
+          <ng-container
+            *ngIf="a[activity.parentUserTaskActivity] as p; else parentTask"
+          >
+            Moves <b>{{ p.activityName }}</b> to
+            <b>{{ activity.activityName }}</b>
+          </ng-container>
+
+          <ng-template #parentTask>
+            Start <b>{{ activity.activityName }}</b>
+          </ng-template>
+        </custom-card>
+      </ng-template>
     </ng-container>
 
     <custom-card
       *ngSwitchCase="activityType.startEvent"
-      headerTitle="Start event"
+      [headerTitle]="activity.activityName || 'Start event'"
       glyphicon="log-in"
-      headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      headerSubTitle="{{ activity.endTime | date : 'short' }}"
     >
-      Start
     </custom-card>
 
     <custom-card
       *ngSwitchCase="activityType.endEvent"
-      headerTitle="End event"
-      glyphicon="record"
-      headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      [headerTitle]="activity.activityName || 'End event'"
+      glyphicon="log-out"
+      headerSubTitle="{{ activity.endTime | date : 'short' }}"
     >
-      End
+    </custom-card>
+
+    <custom-card
+      *ngSwitchCase="activityType.serviceTask"
+      [headerTitle]="activity.activityName || 'Service task'"
+      glyphicon="cog"
+      headerSubTitle="{{ activity.endTime | date : 'short' }}"
+    >
+    </custom-card>
+
+    <custom-card
+      *ngSwitchDefault
+      [headerTitle]="activity.activityName || activity.activityId"
+      glyphicon="list-alt"
+      headerSubTitle="{{ activity.endTime | date : 'short' }}"
+    >
     </custom-card>
   </ng-container>
 </div>
