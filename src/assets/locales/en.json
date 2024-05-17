@@ -1,10 +1,10 @@
 {
   "NO_ASSIGN_USER_TASK": "No user has been assigned to this task",
-  "ACTIVITY_MOVES_TO": "Activity moved <b>{{ p }}</b> to activity <b>{{ c }}</b>",
+  "ACTIVITY_MOVES_TO": "Activity moved <b>{{ parentActivityName }}</b> to activity <b>{{ activityName }}</b>",
   "START_ACTIVITY_EVENT_NAME": "Start of activity",
   "END_ACTIVITY_EVENT_NAME": "End of activity",
   "SERVICE_ACTIVITY_EVENT_NAME": "Service Task",
   "BUSINESS_ACTIVITY_EVENT_NAME": "Business rule task",
-  "START_ACTIVITY_FLOW": "Process <b>{{ name }}</b> has started",
-  "END_ACTIVITY_FLOW": "The process <b>{{ name }}</b> has ended"
+  "START_ACTIVITY_FLOW": "Process <b>{{ activityName }}</b> has started",
+  "END_ACTIVITY_FLOW": "The process <b>{{ activityName }}</b> has ended"
 }

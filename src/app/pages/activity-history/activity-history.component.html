@@ -7,13 +7,9 @@
       *ngSwitchCase="activityType.userTask"
       glyphicon="user"
       [headerTitle]="
-        a[activity.parentUserTaskActivity]?.user
-          ? a[activity.parentUserTaskActivity].user.firstName +
-            ' ' +
-            a[activity.parentUserTaskActivity].user.lastName
-          : activity.user
-          ? activity.user.firstName + ' ' + activity.user.lastName
-          : ''
+        getUserFullName(
+          a[activity.parentUserTaskActivity]?.user || activity.user
+        ) || ''
       "
       altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
       headerSubTitle="{{
@@ -23,7 +19,11 @@
       <div
         innerHTML="{{
           'ACTIVITY_MOVES_TO'
-            | translate : { p: p.activityName, c: activity.activityName }
+            | translate
+              : {
+                  parentActivityName: p.activityName,
+                  activityName: activity.activityName
+                }
         }}"
         *ngIf="a[activity.parentUserTaskActivity] as p; else parentTask"
       ></div>
@@ -46,15 +46,7 @@
           'START_ACTIVITY_FLOW'
             | translate
               : {
-                  name:
-                    subProcessActivity.get(
-                      activity.parentActivityInstanceId.split(':')[0]
-                    )?.activityName ||
-                    subProcessActivity.get(
-                      activity.parentActivityInstanceId.split(':')[0]
-                    )?.activityId ||
-                    activity.activityName ||
-                    activity.activityId
+                  activityName: getSubProcessActivityName(activity)
                 }
         "
       ></div>
@@ -80,15 +72,7 @@
             'END_ACTIVITY_FLOW'
               | translate
                 : {
-                    name:
-                      subProcessActivity.get(
-                        activity.parentActivityInstanceId.split(':')[0]
-                      )?.activityName ||
-                      subProcessActivity.get(
-                        activity.parentActivityInstanceId.split(':')[0]
-                      )?.activityId ||
-                      activity.activityName ||
-                      activity.activityId
+                    activityName: getSubProcessActivityName(activity)
                   }
           "
         ></div>

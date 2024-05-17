@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Observable, concat, map, of, switchMap, tap, toArray } from "rxjs";
+import { Observable, concat, map, of, switchMap, toArray } from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -29,6 +29,20 @@ export class ActivityHistoryComponent implements OnInit {
     private activityService: ActivityService,
     private userService: UserService
   ) {}
+
+  getUserFullName(user: User) {
+    return `${user.firstName} ${user.lastName}`;
+  }
+
+  getSubProcessActivityName(activity: Activity) {
+    const subProcess = this.subProcessActivity.get(
+      activity.parentActivityInstanceId.split(":")[0]
+    );
+
+    return subProcess
+      ? subProcess.activityName || subProcess.activityId
+      : activity.activityName || activity.activityId;
+  }
 
   ngOnInit() {
     this.activity$ = this.taskService.findOneTaskById(this.taskid).pipe(
