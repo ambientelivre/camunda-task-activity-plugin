@@ -1,67 +1,115 @@
-<div style="display: grid; gap: 1em">
+<div style="display: grid; gap: 1.5em">
   <ng-container
     [ngSwitch]="activity.activityType"
-    *ngFor="let activity of activity$ | async as a; let i = index"
+    *ngFor="let activity of activity$ | async as a"
   >
-    <ng-container *ngSwitchCase="activityType.userTask">
-      <custom-card
-        glyphicon="user"
-        [headerTitle]="
-          a.at(activity.parentUserTaskActivity)?.user
-            ? a[activity.parentUserTaskActivity].user.firstName +
-              ' ' +
-              a[activity.parentUserTaskActivity].user.lastName
-            : activity.user
-            ? activity.user.firstName + ' ' + activity.user.lastName
-            : ''
-        "
-        altHeaderTitle="No user was assigned to this task"
-        headerSubTitle="{{
-          activity.endTime || activity.startTime | date : 'short'
+    <custom-card
+      *ngSwitchCase="activityType.userTask"
+      glyphicon="user"
+      [headerTitle]="
+        a[activity.parentUserTaskActivity]?.user
+          ? a[activity.parentUserTaskActivity].user.firstName +
+            ' ' +
+            a[activity.parentUserTaskActivity].user.lastName
+          : activity.user
+          ? activity.user.firstName + ' ' + activity.user.lastName
+          : ''
+      "
+      altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
+      headerSubTitle="{{
+        activity.startTime || activity.startTime | date : 'short'
+      }}"
+    >
+      <div
+        innerHTML="{{
+          'ACTIVITY_MOVES_TO'
+            | translate : { p: p.activityName, c: activity.activityName }
         }}"
-      >
-        <ng-container
-          *ngIf="a[activity.parentUserTaskActivity] as p; else parentTask"
-        >
-          Moves <b>{{ p.activityName }}</b> to
-          <b>{{ activity.activityName }}</b>
-        </ng-container>
+        *ngIf="a[activity.parentUserTaskActivity] as p; else parentTask"
+      ></div>
 
-        <ng-template #parentTask>
-          Start <b>{{ activity.activityName }}</b>
-        </ng-template>
-      </custom-card>
-    </ng-container>
+      <ng-template #parentTask>
+        {{ "START_ACTIVITY_EVENT_NAME" | translate }}
+        <b>{{ activity.activityName }}</b>
+      </ng-template>
+    </custom-card>
 
     <custom-card
       *ngSwitchCase="activityType.startEvent"
-      [headerTitle]="activity.activityName || 'Start event'"
+      [headerTitle]="activity.activityName"
+      altHeaderTitle="{{ 'START_ACTIVITY_EVENT_NAME' | translate }}"
       glyphicon="log-in"
-      headerSubTitle="{{ activity.endTime | date : 'short' }}"
+      headerSubTitle="{{ activity.startTime | date : 'short' }}"
     >
+      <div
+        [innerHTML]="
+          'START_ACTIVITY_FLOW'
+            | translate
+              : {
+                  name:
+                    subProcessActivity.get(
+                      activity.parentActivityInstanceId.split(':')[0]
+                    )?.activityName ||
+                    subProcessActivity.get(
+                      activity.parentActivityInstanceId.split(':')[0]
+                    )?.activityId ||
+                    activity.activityName ||
+                    activity.activityId
+                }
+        "
+      ></div>
     </custom-card>
 
-    <custom-card
+    <ng-template
       *ngSwitchCase="activityType.endEvent"
-      [headerTitle]="activity.activityName || 'End event'"
-      glyphicon="log-out"
-      headerSubTitle="{{ activity.endTime | date : 'short' }}"
-    >
-    </custom-card>
+      [ngTemplateOutlet]="endEventType"
+    ></ng-template>
+    <ng-template
+      *ngSwitchCase="activityType.noneEndEvent"
+      [ngTemplateOutlet]="endEventType"
+    ></ng-template>
+    <ng-template #endEventType>
+      <custom-card
+        [headerTitle]="activity.activityName"
+        altHeaderTitle="{{ 'END_ACTIVITY_EVENT_NAME' | translate }}"
+        glyphicon="log-out"
+        headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      >
+        <div
+          [innerHTML]="
+            'END_ACTIVITY_FLOW'
+              | translate
+                : {
+                    name:
+                      subProcessActivity.get(
+                        activity.parentActivityInstanceId.split(':')[0]
+                      )?.activityName ||
+                      subProcessActivity.get(
+                        activity.parentActivityInstanceId.split(':')[0]
+                      )?.activityId ||
+                      activity.activityName ||
+                      activity.activityId
+                  }
+          "
+        ></div>
+      </custom-card>
+    </ng-template>
 
     <custom-card
       *ngSwitchCase="activityType.serviceTask"
-      [headerTitle]="activity.activityName || 'Service task'"
+      altHeaderTitle="{{ 'SERVICE_ACTIVITY_EVENT_NAME' | translate }}"
+      [headerTitle]="activity.activityName"
       glyphicon="cog"
-      headerSubTitle="{{ activity.endTime | date : 'short' }}"
+      headerSubTitle="{{ activity.startTime | date : 'short' }}"
     >
     </custom-card>
 
     <custom-card
-      *ngSwitchDefault
-      [headerTitle]="activity.activityName || activity.activityId"
+      *ngSwitchCase="activityType.businessRuleTask"
+      altHeaderTitle="{{ 'BUSINESS_ACTIVITY_EVENT_NAME' | translate }}"
+      [headerTitle]="activity.activityName"
       glyphicon="list-alt"
-      headerSubTitle="{{ activity.endTime | date : 'short' }}"
+      headerSubTitle="{{ activity.startTime | date : 'short' }}"
     >
     </custom-card>
   </ng-container>

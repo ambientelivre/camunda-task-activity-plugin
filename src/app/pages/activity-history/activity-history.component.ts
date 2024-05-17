@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Observable, concat, map, of, switchMap, toArray } from "rxjs";
+import { Observable, concat, map, of, switchMap, tap, toArray } from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -20,6 +20,7 @@ export type TaskActivity = Activity & {
 export class ActivityHistoryComponent implements OnInit {
   activity$: Observable<TaskActivity[]>;
   activityType = ActivityType;
+  subProcessActivity = new Map<string, Activity>();
 
   @Input() taskid!: string;
 
@@ -48,15 +49,22 @@ export class ActivityHistoryComponent implements OnInit {
               : of(activity)
           )
         ).pipe(
-          map((_activity, i) => ({
-            ..._activity,
-            parentUserTaskActivity: activity.findIndex(
-              ({ activityType, parentActivityInstanceId }, i2) =>
-                i < i2 &&
-                activityType === ActivityType.userTask &&
-                parentActivityInstanceId === _activity.parentActivityInstanceId
-            ),
-          }))
+          map(
+            (_activity, i) => (
+              _activity.activityType === ActivityType.subProcess &&
+                this.subProcessActivity.set(_activity.activityId, _activity),
+              {
+                ..._activity,
+                parentUserTaskActivity: activity.findIndex(
+                  ({ activityType, parentActivityInstanceId }, i2) =>
+                    i < i2 &&
+                    activityType === ActivityType.userTask &&
+                    parentActivityInstanceId ===
+                      _activity.parentActivityInstanceId
+                ),
+              }
+            )
+          )
         )
       ),
       toArray()

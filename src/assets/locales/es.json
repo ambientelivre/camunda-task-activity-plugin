@@ -1,0 +1,10 @@
+{
+  "NO_ASSIGN_USER_TASK": "No se ha asignado ningún usuario a esta tarea",
+  "ACTIVITY_MOVES_TO": "La actividad se movió <b>{{ p }}</b> a la actividad <b>{{ c }}</b>",
+  "START_ACTIVITY_EVENT_NAME": "Inicio de actividad",
+  "END_ACTIVITY_EVENT_NAME": "Fin de actividad",
+  "SERVICE_ACTIVITY_EVENT_NAME": "Tarea de Servicio",
+  "BUSINESS_ACTIVITY_EVENT_NAME": "Tarea de reglas de negocio",
+  "START_ACTIVITY_FLOW": "El proceso <b>{{ name }}</b> ha comenzado",
+  "END_ACTIVITY_FLOW": "El proceso <b>{{ name }}</b> ha finalizado"
+}
