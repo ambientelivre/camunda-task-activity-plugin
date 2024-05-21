@@ -41,9 +41,10 @@ export class AppModule {
 
     customElements.define(
       "activity-history",
-      createCustomElement(ActivityHistoryComponent, {
-        injector: this.injector,
-      })
+      customElements.get("activity-history") ||
+        createCustomElement(ActivityHistoryComponent, {
+          injector: this.injector,
+        })
     );
   }
 
