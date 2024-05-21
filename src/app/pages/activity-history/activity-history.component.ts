@@ -9,7 +9,7 @@ import { TaskService } from "../../process-instance/task/task.service";
 
 export type TaskActivity = Activity & {
   user?: User;
-  parentUserTaskActivity?: number;
+  parentUserTaskActivityIndex?: number;
 };
 
 @Component({
@@ -20,7 +20,7 @@ export type TaskActivity = Activity & {
 export class ActivityHistoryComponent implements OnInit {
   activity$: Observable<TaskActivity[]>;
   activityType = ActivityType;
-  subProcessActivity = new Map<string, Activity>();
+  subProcessActivityName = new Map<string, string>();
 
   @Input() taskid!: string;
 
@@ -35,12 +35,12 @@ export class ActivityHistoryComponent implements OnInit {
   }
 
   getSubProcessActivityName(activity: Activity) {
-    const subProcess = this.subProcessActivity.get(
+    const subProcess = this.subProcessActivityName.get(
       activity.parentActivityInstanceId.split(":")[0]
     );
 
     return subProcess
-      ? subProcess.activityName || subProcess.activityId
+      ? subProcess
       : activity.activityName || activity.activityId;
   }
 
@@ -66,7 +66,10 @@ export class ActivityHistoryComponent implements OnInit {
           map(
             (_activity, i) => (
               _activity.activityType === ActivityType.subProcess &&
-                this.subProcessActivity.set(_activity.activityId, _activity),
+                this.subProcessActivityName.set(
+                  _activity.activityId,
+                  _activity.activityName || _activity.activityId
+                ),
               {
                 ..._activity,
                 parentUserTaskActivity: activity.findIndex(

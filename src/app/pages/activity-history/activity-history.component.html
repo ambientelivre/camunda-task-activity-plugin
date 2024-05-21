@@ -8,7 +8,7 @@
       glyphicon="user"
       [headerTitle]="
         getUserFullName(
-          a[activity.parentUserTaskActivity]?.user || activity.user
+          a[activity.parentUserTaskActivityIndex]?.user || activity.user
         ) || ''
       "
       altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
@@ -25,7 +25,7 @@
                   activityName: activity.activityName
                 }
         }}"
-        *ngIf="a[activity.parentUserTaskActivity] as p; else parentTask"
+        *ngIf="a[activity.parentUserTaskActivityIndex] as p; else parentTask"
       ></div>
 
       <ng-template #parentTask>
