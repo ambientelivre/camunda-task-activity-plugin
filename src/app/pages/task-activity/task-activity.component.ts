@@ -14,11 +14,11 @@ export type TaskActivity = Activity &
   }>;
 
 @Component({
-  selector: "custom-activity-history",
-  templateUrl: "./activity-history.component.html",
-  styleUrls: ["./activity-history.component.css"],
+  selector: 'custom-task-activity',
+  templateUrl: './task-activity.component.html',
+  styleUrls: ['./task-activity.component.css'],
 })
-export class ActivityHistoryComponent implements OnInit {
+export class TaskActivityComponent implements OnInit {
   activity$: Observable<TaskActivity[]>;
   activityType = ActivityType;
   subProcessActivityName = new Map<string, string>();

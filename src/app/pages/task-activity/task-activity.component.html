@@ -3,7 +3,7 @@
     [ngSwitch]="activity.activityType"
     *ngFor="let activity of activity$ | async as a"
   >
-    <custom-card
+    <custom-media
       *ngSwitchCase="activityType.userTask"
       glyphicon="user"
       [headerTitle]="
@@ -30,9 +30,9 @@
         {{ "START_ACTIVITY_EVENT_NAME" | translate }}
         <b>{{ activity.activityName }}</b>
       </ng-template>
-    </custom-card>
+    </custom-media>
 
-    <custom-card
+    <custom-media
       *ngSwitchCase="activityType.startEvent"
       [headerTitle]="activity.activityName"
       altHeaderTitle="{{ 'START_ACTIVITY_EVENT_NAME' | translate }}"
@@ -48,7 +48,7 @@
                 }
         "
       ></div>
-    </custom-card>
+    </custom-media>
 
     <ng-template
       *ngSwitchCase="activityType.endEvent"
@@ -59,7 +59,7 @@
       [ngTemplateOutlet]="endEventType"
     ></ng-template>
     <ng-template #endEventType>
-      <custom-card
+      <custom-media
         [headerTitle]="activity.activityName"
         altHeaderTitle="{{ 'END_ACTIVITY_EVENT_NAME' | translate }}"
         glyphicon="log-out"
@@ -74,25 +74,25 @@
                   }
           "
         ></div>
-      </custom-card>
+      </custom-media>
     </ng-template>
 
-    <custom-card
+    <custom-media
       *ngSwitchCase="activityType.serviceTask"
       altHeaderTitle="{{ 'SERVICE_ACTIVITY_EVENT_NAME' | translate }}"
       [headerTitle]="activity.activityName"
       glyphicon="cog"
       headerSubTitle="{{ activity.startTime | date : 'short' }}"
     >
-    </custom-card>
+    </custom-media>
 
-    <custom-card
+    <custom-media
       *ngSwitchCase="activityType.businessRuleTask"
       altHeaderTitle="{{ 'BUSINESS_ACTIVITY_EVENT_NAME' | translate }}"
       [headerTitle]="activity.activityName"
       glyphicon="list-alt"
       headerSubTitle="{{ activity.startTime | date : 'short' }}"
     >
-    </custom-card>
+    </custom-media>
   </ng-container>
 </div>

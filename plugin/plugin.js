@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-const activityTabPlugin = {
-  id: "tasklist.activityHistory",
+const taskActivityTabPlugin = {
+  id: "tasklist.taskActivity.tab",
   pluginPoint: "tasklist.task.detail",
   priority: 0,
   render: (container, { taskId }) => {
-    container.innerHTML = `<activity-history taskid="${taskId}"></activity-history>`;
+    container.innerHTML = `<task-activity taskid="${taskId}"></task-activity>`;
   },
   properties: {
-    label: "Activity history",
+    label: "Activity",
   },
 };
 
-export default [activityTabPlugin];
+export default [taskActivityTabPlugin];

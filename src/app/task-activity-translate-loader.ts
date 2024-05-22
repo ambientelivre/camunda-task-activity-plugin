@@ -8,7 +8,7 @@ export class TaskActivityTranslateLoader implements TranslateLoader {
 
   getTranslation(lang: string) {
     return this.httpClient.get(
-      `/camunda/app/tasklist/scripts/activity-history/taskActivity/assets/locales/${lang}.json`
+      `/camunda/app/tasklist/scripts/task-activity/demo/assets/locales/${lang}.json`
     );
   }
 }

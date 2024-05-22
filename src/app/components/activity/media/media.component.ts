@@ -1,11 +1,11 @@
 import { Component, Input } from "@angular/core";
 
 @Component({
-  selector: "custom-card",
-  templateUrl: "./card.component.html",
-  styleUrls: ["./card.component.css"],
+  selector: 'custom-media',
+  templateUrl: './media.component.html',
+  styleUrls: ['./media.component.css'],
 })
-export class CardComponent {
+export class MediaComponent {
   @Input()
   headerTitle!: string;
 

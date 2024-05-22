@@ -4,22 +4,29 @@ import { createCustomElement } from "@angular/elements";
 import { HttpClient, HttpClientModule } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
-import { NgHttpCachingModule } from "ng-http-caching";
-import { CardComponent } from "./components/activity/card/card.component";
-import { ActivityHistoryComponent } from "./pages/activity-history/activity-history.component";
 import {
+  MissingTranslationHandler,
   TranslateLoader,
   TranslateModule,
   TranslateService,
 } from "@ngx-translate/core";
+import { NgHttpCachingModule } from "ng-http-caching";
+import { MediaComponent } from "./components/activity/media/media.component";
+import { TaskActivityComponent } from "./pages/task-activity/task-activity.component";
 import { TaskActivityTranslateLoader } from "./task-activity-translate-loader";
+import { TaskActivityTranslateLoaderFallback } from "./task-activity-translate-loader-fallback";
 
 @NgModule({
-  declarations: [ActivityHistoryComponent, CardComponent],
+  declarations: [TaskActivityComponent, MediaComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
     TranslateModule.forRoot({
+      missingTranslationHandler: {
+        provide: MissingTranslationHandler,
+        useClass: TaskActivityTranslateLoaderFallback,
+        deps: [HttpClient],
+      },
       loader: {
         provide: TranslateLoader,
         useClass: TaskActivityTranslateLoader,
@@ -28,7 +35,7 @@ import { TaskActivityTranslateLoader } from "./task-activity-translate-loader";
     }),
     NgHttpCachingModule.forRoot({ lifetime: 10_000 }),
   ],
-  entryComponents: [ActivityHistoryComponent],
+  entryComponents: [TaskActivityComponent],
 })
 export class AppModule {
   constructor(
@@ -36,13 +43,13 @@ export class AppModule {
     private injector: Injector
   ) {
     this.translateService.setDefaultLang(
-      this.translateService.getBrowserCultureLang()
+      this.translateService.getBrowserLang()
     );
 
     customElements.define(
-      "activity-history",
-      customElements.get("activity-history") ||
-        createCustomElement(ActivityHistoryComponent, {
+      "task-activity",
+      customElements.get("task-activity") ||
+        createCustomElement(TaskActivityComponent, {
           injector: this.injector,
         })
     );

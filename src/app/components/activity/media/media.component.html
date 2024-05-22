@@ -1,0 +1,23 @@
+<div class="media">
+  <div class="media-left" style="padding-right: 2.5em">
+    <div
+      class="glyphicon media-object"
+      [ngClass]="'glyphicon-' + glyphicon"
+      style="font-size: 2em"
+    ></div>
+  </div>
+  <div class="media-body">
+    <h4 class="media-heading">
+      <ng-container *ngIf="headerTitle; else altHeaderTitleRef">
+        {{ headerTitle }}</ng-container
+      >
+
+      <ng-template #altHeaderTitleRef>
+        <mark>{{ altHeaderTitle }}</mark>
+      </ng-template>
+      <small style="margin-left: 1em">{{ headerSubTitle }}</small>
+    </h4>
+
+    <ng-content></ng-content>
+  </div>
+</div>
