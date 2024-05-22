@@ -7,7 +7,7 @@ import { UserRepository } from "./user.repository";
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  findOneUser(id: string) {
+  findOneUserById(id: string) {
     return this.userRepository.findOneUserById(id);
   }
 }

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Observable, concat, map, of, switchMap, toArray } from "rxjs";
+import { Observable, concat, map, of, switchMap, tap, toArray } from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -7,10 +7,11 @@ import { Activity } from "../../process-instance/activity/activity";
 import { ActivityService } from "../../process-instance/activity/activity.service";
 import { TaskService } from "../../process-instance/task/task.service";
 
-export type TaskActivity = Activity & {
-  user?: User;
-  parentUserTaskActivityIndex?: number;
-};
+export type TaskActivity = Activity &
+  Partial<{
+    user: User;
+    parentUserTaskActivityIndex: number;
+  }>;
 
 @Component({
   selector: "custom-activity-history",
@@ -35,12 +36,12 @@ export class ActivityHistoryComponent implements OnInit {
   }
 
   getSubProcessActivityName(activity: Activity) {
-    const subProcess = this.subProcessActivityName.get(
+    const subProcessActivityName = this.subProcessActivityName.get(
       activity.parentActivityInstanceId.split(":")[0]
     );
 
-    return subProcess
-      ? subProcess
+    return subProcessActivityName
+      ? subProcessActivityName
       : activity.activityName || activity.activityId;
   }
 
@@ -55,32 +56,39 @@ export class ActivityHistoryComponent implements OnInit {
       ),
       switchMap((activity) =>
         concat(
-          ...activity.map((activity) =>
-            activity.assignee
-              ? this.userService
-                  .findOneUser(activity.assignee)
-                  .pipe(map((user) => ({ ...activity, user })))
-              : of(activity)
-          )
-        ).pipe(
-          map(
-            (_activity, i) => (
-              _activity.activityType === ActivityType.subProcess &&
-                this.subProcessActivityName.set(
-                  _activity.activityId,
-                  _activity.activityName || _activity.activityId
-                ),
-              {
-                ..._activity,
-                parentUserTaskActivity: activity.findIndex(
-                  ({ activityType, parentActivityInstanceId }, i2) =>
-                    i < i2 &&
-                    activityType === ActivityType.userTask &&
-                    parentActivityInstanceId ===
-                      _activity.parentActivityInstanceId
-                ),
-              }
-            )
+          ...activity.map((_activity, i) =>
+            _activity.assignee
+              ? this.userService.findOneUserById(_activity.assignee).pipe(
+                  map((user) => {
+                    ++i;
+
+                    const findIndex = activity
+                      .slice(i)
+                      .findIndex(
+                        ({ activityType, parentActivityInstanceId }) =>
+                          activityType === ActivityType.userTask &&
+                          parentActivityInstanceId ===
+                            _activity.parentActivityInstanceId
+                      );
+
+                    return {
+                      ..._activity,
+                      user,
+                      parentUserTaskActivityIndex:
+                        findIndex === -1 ? -1 : findIndex + i,
+                    };
+                  })
+                )
+              : of(_activity).pipe(
+                  tap((_activity) => {
+                    if (_activity.activityType === ActivityType.subProcess) {
+                      this.subProcessActivityName.set(
+                        _activity.activityId,
+                        _activity.activityName || _activity.activityId
+                      );
+                    }
+                  })
+                )
           )
         )
       ),

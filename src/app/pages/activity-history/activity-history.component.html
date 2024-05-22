@@ -12,11 +12,10 @@
         ) || ''
       "
       altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
-      headerSubTitle="{{
-        activity.startTime || activity.startTime | date : 'short'
-      }}"
+      headerSubTitle="{{ activity.startTime | date : 'short' }}"
     >
       <div
+        *ngIf="a[activity.parentUserTaskActivityIndex] as p; else parentTask"
         innerHTML="{{
           'ACTIVITY_MOVES_TO'
             | translate
@@ -25,7 +24,6 @@
                   activityName: activity.activityName
                 }
         }}"
-        *ngIf="a[activity.parentUserTaskActivityIndex] as p; else parentTask"
       ></div>
 
       <ng-template #parentTask>
