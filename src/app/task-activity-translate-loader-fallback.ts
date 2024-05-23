@@ -15,7 +15,7 @@ export class TaskActivityTranslateLoaderFallback
     params.translateService.setDefaultLang("en");
 
     return this.httpClient.get(
-      "/camunda/app/tasklist/scripts/task-activity/demo/assets/locales/en.json"
+      "/camunda/app/tasklist/scripts/camunda-task-activity-plugin/demo/assets/locales/en.json"
     );
   }
 }
