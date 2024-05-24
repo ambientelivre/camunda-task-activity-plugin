@@ -1,14 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import {
-  Observable,
-  concat,
-  from,
-  map,
-  of,
-  switchMap,
-  tap,
-  toArray,
-} from "rxjs";
+import { Observable, concatAll, from, map, of, switchMap, toArray } from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -52,7 +43,7 @@ export class TaskActivityComponent implements OnInit {
 
     return subProcessActivityName
       ? subProcessActivityName
-      : activity.activityName || activity.activityId;
+      : activity.activityName;
   }
 
   activityIdHasMultiInstanceBody(activityId: string) {
@@ -69,66 +60,76 @@ export class TaskActivityComponent implements OnInit {
         })
       ),
       switchMap((activity) =>
-        concat(
-          ...activity.map((_activity, i) =>
-            _activity.activityType === ActivityType.userTask
-              ? from(
-                  _activity.assignee
-                    ? this.userService.findOneUserById(_activity.assignee)
-                    : of(null)
-                ).pipe(
-                  map((user) => {
-                    ++i;
+        activity.map((_activity: TaskActivity, i) => {
+          _activity.activityName =
+            _activity.activityName || _activity.activityId;
 
-                    const i2 = activity
-                      .slice(i)
-                      .findIndex(
-                        ({
-                          activityType,
-                          parentActivityInstanceId,
-                          activityId,
-                        }) =>
-                          activityType === ActivityType.userTask &&
-                          ((parentActivityInstanceId ===
-                            _activity.parentActivityInstanceId &&
-                            activityId !== _activity.activityId) ||
-                            (parentActivityInstanceId !==
-                              _activity.parentActivityInstanceId &&
-                              activityId === _activity.activityId))
-                      );
+          switch (_activity.activityType) {
+            case ActivityType.multiInstanceBody: {
+              const multiInstanceBody = _activity.activityId.split("#")[0];
 
-                    return {
-                      ..._activity,
-                      user,
-                      parentUserTaskActivityIndex: i2 === -1 ? -1 : i2 + i,
-                    };
-                  })
-                )
-              : of(_activity).pipe(
-                  tap((_activity) => {
-                    switch (_activity.activityType) {
-                      case ActivityType.multiInstanceBody: {
-                        const multiInstanceBody =
-                          _activity.activityId.split("#")[0];
+              if (multiInstanceBody) {
+                this.multiInstanceBody.set(multiInstanceBody);
+              }
 
-                        if (multiInstanceBody) {
-                          this.multiInstanceBody.set(multiInstanceBody);
-                        }
+              break;
+            }
 
-                        return;
-                      }
+            case ActivityType.subProcess: {
+              this.subProcessActivityName.set(
+                _activity.activityId,
+                _activity.activityName
+              );
 
-                      case ActivityType.subProcess:
-                        return this.subProcessActivityName.set(
-                          _activity.activityId,
-                          _activity.activityName || _activity.activityId
-                        );
-                    }
-                  })
-                )
-          )
-        )
+              break;
+            }
+
+            default: {
+              break;
+            }
+
+            case ActivityType.userTask: {
+              return from(
+                _activity.assignee
+                  ? this.userService.findOneUserById(_activity.assignee)
+                  : of(null)
+              ).pipe(
+                map((user) => {
+                  _activity.user = user;
+
+                  ++i;
+
+                  const i2 = activity
+                    .slice(i)
+                    .findIndex(
+                      ({
+                        activityType,
+                        parentActivityInstanceId,
+                        activityId,
+                        assignee,
+                      }) =>
+                        activityType === ActivityType.userTask &&
+                        ((parentActivityInstanceId ===
+                          _activity.parentActivityInstanceId &&
+                          activityId !== _activity.activityId) ||
+                          parentActivityInstanceId !==
+                            _activity.parentActivityInstanceId ||
+                          _activity.assignee === assignee)
+                    );
+
+                  _activity.parentUserTaskActivityIndex =
+                    i2 === -1 ? -1 : i2 + i;
+
+                  return _activity;
+                })
+              );
+            }
+          }
+
+          return of(_activity);
+        })
       ),
+      concatAll(),
       toArray()
     );
   }

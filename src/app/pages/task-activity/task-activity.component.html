@@ -25,11 +25,7 @@
           'END_ACTIVITY_FLOW'
             | translate
               : {
-                  activityName:
-                    a[activity.parentUserTaskActivityIndex]?.activityName ||
-                    a[activity.parentUserTaskActivityIndex]?.activityId ||
-                    activity.activityName ||
-                    activity.activityId
+                  activityName: activity.activityName
                 }
         }}"
       ></div>
