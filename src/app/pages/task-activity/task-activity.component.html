@@ -8,23 +8,45 @@
       glyphicon="user"
       [headerTitle]="
         getUserFullName(
-          a[activity.parentUserTaskActivityIndex]?.user || activity.user
-        ) || ''
+          activityIdHasMultiInstanceBody(activity.activityId)
+            ? activity.user
+            : a[activity.parentUserTaskActivityIndex]?.user || activity.user
+        )
       "
       altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
       headerSubTitle="{{ activity.startTime | date : 'short' }}"
     >
       <div
-        *ngIf="a[activity.parentUserTaskActivityIndex] as p; else parentTask"
+        *ngIf="
+          activityIdHasMultiInstanceBody(activity.activityId);
+          else currentTask
+        "
         innerHTML="{{
-          'ACTIVITY_MOVES_TO'
+          'END_ACTIVITY_FLOW'
             | translate
               : {
-                  parentActivityName: p.activityName,
-                  activityName: activity.activityName
+                  activityName:
+                    a[activity.parentUserTaskActivityIndex]?.activityName ||
+                    a[activity.parentUserTaskActivityIndex]?.activityId ||
+                    activity.activityName ||
+                    activity.activityId
                 }
         }}"
       ></div>
+
+      <ng-template #currentTask>
+        <div
+          *ngIf="a[activity.parentUserTaskActivityIndex] as p; else parentTask"
+          innerHTML="{{
+            'ACTIVITY_MOVES_TO'
+              | translate
+                : {
+                    parentActivityName: p.activityName,
+                    activityName: activity.activityName
+                  }
+          }}"
+        ></div>
+      </ng-template>
 
       <ng-template #parentTask>
         {{ "START_ACTIVITY_EVENT_NAME" | translate }}

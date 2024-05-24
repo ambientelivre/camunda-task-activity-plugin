@@ -1,5 +1,14 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Observable, concat, map, of, switchMap, tap, toArray } from "rxjs";
+import {
+  Observable,
+  concat,
+  from,
+  map,
+  of,
+  switchMap,
+  tap,
+  toArray,
+} from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -14,14 +23,15 @@ export type TaskActivity = Activity &
   }>;
 
 @Component({
-  selector: 'custom-task-activity',
-  templateUrl: './task-activity.component.html',
-  styleUrls: ['./task-activity.component.css'],
+  selector: "custom-task-activity",
+  templateUrl: "./task-activity.component.html",
+  styleUrls: ["./task-activity.component.css"],
 })
 export class TaskActivityComponent implements OnInit {
   activity$: Observable<TaskActivity[]>;
   activityType = ActivityType;
-  subProcessActivityName = new Map<string, string>();
+  private subProcessActivityName = new Map<string, string>();
+  private multiInstanceBody = new Map<string, void>();
 
   @Input() taskid!: string;
 
@@ -31,8 +41,8 @@ export class TaskActivityComponent implements OnInit {
     private userService: UserService
   ) {}
 
-  getUserFullName(user: User) {
-    return `${user.firstName} ${user.lastName}`;
+  getUserFullName(user?: User) {
+    return `${user?.firstName || ""} ${user?.lastName || ""}`;
   }
 
   getSubProcessActivityName(activity: Activity) {
@@ -43,6 +53,10 @@ export class TaskActivityComponent implements OnInit {
     return subProcessActivityName
       ? subProcessActivityName
       : activity.activityName || activity.activityId;
+  }
+
+  activityIdHasMultiInstanceBody(activityId: string) {
+    return this.multiInstanceBody.has(activityId);
   }
 
   ngOnInit() {
@@ -57,35 +71,58 @@ export class TaskActivityComponent implements OnInit {
       switchMap((activity) =>
         concat(
           ...activity.map((_activity, i) =>
-            _activity.assignee
-              ? this.userService.findOneUserById(_activity.assignee).pipe(
+            _activity.activityType === ActivityType.userTask
+              ? from(
+                  _activity.assignee
+                    ? this.userService.findOneUserById(_activity.assignee)
+                    : of(null)
+                ).pipe(
                   map((user) => {
                     ++i;
 
-                    const findIndex = activity
+                    const i2 = activity
                       .slice(i)
                       .findIndex(
-                        ({ activityType, parentActivityInstanceId }) =>
+                        ({
+                          activityType,
+                          parentActivityInstanceId,
+                          activityId,
+                        }) =>
                           activityType === ActivityType.userTask &&
-                          parentActivityInstanceId ===
-                            _activity.parentActivityInstanceId
+                          ((parentActivityInstanceId ===
+                            _activity.parentActivityInstanceId &&
+                            activityId !== _activity.activityId) ||
+                            (parentActivityInstanceId !==
+                              _activity.parentActivityInstanceId &&
+                              activityId === _activity.activityId))
                       );
 
                     return {
                       ..._activity,
                       user,
-                      parentUserTaskActivityIndex:
-                        findIndex === -1 ? -1 : findIndex + i,
+                      parentUserTaskActivityIndex: i2 === -1 ? -1 : i2 + i,
                     };
                   })
                 )
               : of(_activity).pipe(
                   tap((_activity) => {
-                    if (_activity.activityType === ActivityType.subProcess) {
-                      this.subProcessActivityName.set(
-                        _activity.activityId,
-                        _activity.activityName || _activity.activityId
-                      );
+                    switch (_activity.activityType) {
+                      case ActivityType.multiInstanceBody: {
+                        const multiInstanceBody =
+                          _activity.activityId.split("#")[0];
+
+                        if (multiInstanceBody) {
+                          this.multiInstanceBody.set(multiInstanceBody);
+                        }
+
+                        return;
+                      }
+
+                      case ActivityType.subProcess:
+                        return this.subProcessActivityName.set(
+                          _activity.activityId,
+                          _activity.activityName || _activity.activityId
+                        );
                     }
                   })
                 )

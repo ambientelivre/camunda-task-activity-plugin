@@ -1,10 +1,10 @@
 {
   "NO_ASSIGN_USER_TASK": "No se ha asignado ningún usuario a esta tarea",
-  "ACTIVITY_MOVES_TO": "La actividad se movió <b>{{ parentActivityName }}</b> a la actividad <b>{{ activityName }}</b>",
+  "ACTIVITY_MOVES_TO": "La actividad se movió <b>{{ parentActivityName }}</b> a <b>{{ ActivityName }}</b>",
   "START_ACTIVITY_EVENT_NAME": "Inicio de actividad",
   "END_ACTIVITY_EVENT_NAME": "Fin de actividad",
-  "SERVICE_ACTIVITY_EVENT_NAME": "Tarea de Servicio",
+  "SERVICE_ACTIVITY_EVENT_NAME": "Tarea de servicio",
   "BUSINESS_ACTIVITY_EVENT_NAME": "Tarea de reglas de negocio",
-  "START_ACTIVITY_FLOW": "El proceso <b>{{ activityName }}</b> ha comenzado",
-  "END_ACTIVITY_FLOW": "El proceso <b>{{ activityName }}</b> ha finalizado"
+  "START_ACTIVITY_FLOW": "La actividad <b>{{ ActivityName }}</b> ha comenzado",
+  "END_ACTIVITY_FLOW": "La actividad <b>{{ ActivityName }}</b> ha finalizado"
 }

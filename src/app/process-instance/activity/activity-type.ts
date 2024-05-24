@@ -6,4 +6,5 @@ export enum ActivityType {
   businessRuleTask = "businessRuleTask",
   serviceTask = "serviceTask",
   subProcess = "subProcess",
+  multiInstanceBody = "multiInstanceBody",
 }
