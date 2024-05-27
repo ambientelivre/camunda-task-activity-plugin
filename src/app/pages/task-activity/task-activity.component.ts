@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Observable, concatAll, from, map, of, switchMap, toArray } from "rxjs";
+import { Observable, concatAll, map, of, switchMap, toArray } from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -22,7 +22,7 @@ export class TaskActivityComponent implements OnInit {
   activity$: Observable<TaskActivity[]>;
   activityType = ActivityType;
   private subProcessActivityName = new Map<string, string>();
-  private multiInstanceBody = new Map<string, void>();
+  private activityIdMultiInstanceBody = new Map<string, void>();
 
   @Input() taskid!: string;
 
@@ -33,7 +33,22 @@ export class TaskActivityComponent implements OnInit {
   ) {}
 
   getUserFullName(user?: User) {
-    return `${user?.firstName || ""} ${user?.lastName || ""}`;
+    let fullName = "";
+
+    if (user) {
+      if (user.firstName) {
+        fullName += user.firstName;
+
+        if (user.lastName) {
+          fullName += " ";
+          fullName += user.lastName;
+        }
+      }
+
+      return fullName;
+    }
+
+    return "";
   }
 
   getSubProcessActivityName(activity: Activity) {
@@ -47,7 +62,25 @@ export class TaskActivityComponent implements OnInit {
   }
 
   activityIdHasMultiInstanceBody(activityId: string) {
-    return this.multiInstanceBody.has(activityId);
+    return this.activityIdMultiInstanceBody.has(activityId);
+  }
+
+  getMultiInstanceBodyActivityId(activityId: string) {
+    return activityId.split("#")[0];
+  }
+
+  getParentUserTaskActivityIndex(activity: Activity[], currentIndex: number) {
+    const startIndex = currentIndex + 1;
+
+    const index = activity
+      .slice(startIndex)
+      .findIndex(
+        ({ activityType, executionId }) =>
+          activityType === ActivityType.userTask &&
+          executionId !== activity[currentIndex].executionId
+      );
+
+    return index === -1 ? -1 : index + startIndex;
   }
 
   ngOnInit() {
@@ -66,10 +99,12 @@ export class TaskActivityComponent implements OnInit {
 
           switch (_activity.activityType) {
             case ActivityType.multiInstanceBody: {
-              const multiInstanceBody = _activity.activityId.split("#")[0];
+              const activityId = this.getMultiInstanceBodyActivityId(
+                _activity.activityId
+              );
 
-              if (multiInstanceBody) {
-                this.multiInstanceBody.set(multiInstanceBody);
+              if (activityId) {
+                this.activityIdMultiInstanceBody.set(activityId);
               }
 
               break;
@@ -89,36 +124,12 @@ export class TaskActivityComponent implements OnInit {
             }
 
             case ActivityType.userTask: {
-              return from(
-                _activity.assignee
-                  ? this.userService.findOneUserById(_activity.assignee)
-                  : of(null)
-              ).pipe(
+              return this.userService.findOneUserById(_activity.assignee).pipe(
                 map((user) => {
                   _activity.user = user;
 
-                  ++i;
-
-                  const i2 = activity
-                    .slice(i)
-                    .findIndex(
-                      ({
-                        activityType,
-                        parentActivityInstanceId,
-                        activityId,
-                        assignee,
-                      }) =>
-                        activityType === ActivityType.userTask &&
-                        ((parentActivityInstanceId ===
-                          _activity.parentActivityInstanceId &&
-                          activityId !== _activity.activityId) ||
-                          parentActivityInstanceId !==
-                            _activity.parentActivityInstanceId ||
-                          _activity.assignee === assignee)
-                    );
-
                   _activity.parentUserTaskActivityIndex =
-                    i2 === -1 ? -1 : i2 + i;
+                    this.getParentUserTaskActivityIndex(activity, i);
 
                   return _activity;
                 })

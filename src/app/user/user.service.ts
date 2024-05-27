@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { UserRepository } from "./user.repository";
+import { of } from "rxjs";
 
 @Injectable({
   providedIn: "root",
@@ -7,7 +8,7 @@ import { UserRepository } from "./user.repository";
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  findOneUserById(id: string) {
-    return this.userRepository.findOneUserById(id);
+  findOneUserById(id?: string) {
+    return id ? this.userRepository.findOneUserById(id) : of(null);
   }
 }
