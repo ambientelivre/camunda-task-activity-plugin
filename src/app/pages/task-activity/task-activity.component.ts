@@ -33,22 +33,13 @@ export class TaskActivityComponent implements OnInit {
   ) {}
 
   getUserFullName(user?: User) {
-    let fullName = "";
-
-    if (user) {
-      if (user.firstName) {
-        fullName += user.firstName;
-
-        if (user.lastName) {
-          fullName += " ";
-          fullName += user.lastName;
-        }
-      }
-
-      return fullName;
+    if (!user || !user.firstName) {
+      return "";
     }
 
-    return "";
+    return user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.firstName;
   }
 
   getSubProcessActivityName(activity: Activity) {
