@@ -4,7 +4,8 @@
 
 <ng-container *ngIf="activity$ | async as a; else loadingRef">
   <style>
-    .task-details .content {
+    .task-details .content,
+    .page-wrap {
       height: 24em;
     }
   </style>
@@ -125,6 +126,16 @@
       </custom-media>
     </ng-container>
   </div>
+
+  <ng-container
+    infiniteScroll
+    [infiniteScrollDistance]="1"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="nextPage()"
+    [fromRoot]="true"
+    infiniteScrollContainer=".page-wrap"
+    page-wrap
+  ></ng-container>
 
   <hr
     style="margin: 1.5em"
