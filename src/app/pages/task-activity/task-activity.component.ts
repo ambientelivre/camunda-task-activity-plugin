@@ -29,7 +29,6 @@ export interface UserTaskActivity extends Activity {
 export class TaskActivityComponent implements OnInit {
   activity$: Observable<UserTaskActivity[]>;
   activityType = ActivityType;
-  taskDetailsContainer = document.querySelector(".task-details .content");
   loading = false;
   private activity: UserTaskActivity[] = [];
   private currentPage = new BehaviorSubject(0);
