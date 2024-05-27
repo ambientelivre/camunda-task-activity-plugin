@@ -30,6 +30,8 @@ export class TaskActivityComponent implements OnInit {
   activity$: Observable<UserTaskActivity[]>;
   activityType = ActivityType;
   loading = false;
+  hasNextPage = true;
+
   private activity: UserTaskActivity[] = [];
   private currentPage = new BehaviorSubject(0);
   private maxResults = 20;
@@ -87,7 +89,9 @@ export class TaskActivityComponent implements OnInit {
   }
 
   nextPage() {
-    this.currentPage.next(this.currentPage.value + 1);
+    if (this.hasNextPage) {
+      this.currentPage.next(this.currentPage.value + 1);
+    }
   }
 
   ngOnInit() {
@@ -166,6 +170,7 @@ export class TaskActivityComponent implements OnInit {
                 toArray(),
                 tap((activity) => {
                   this.loading = false;
+                  this.hasNextPage = activity.length === this.maxResults;
                   this.activity = this.activity.concat(activity);
                 }),
                 map(() => this.activity)

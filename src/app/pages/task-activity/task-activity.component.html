@@ -3,14 +3,22 @@
 </ng-template>
 
 <ng-container *ngIf="activity$ | async as a; else loadingRef">
-  <style>
-    .task-details .content,
-    .page-wrap {
-      height: 24em;
-    }
-  </style>
-
-  <div style="display: grid; gap: 1.5em" *ngIf="a.length > 0; else loadingRef">
+  <div
+    style="
+      height: 36em;
+      display: grid;
+      gap: 1.5em;
+      overflow-y: scroll;
+      border-top: 1px solid #ddd;
+      padding: 1.5em;
+    "
+    infiniteScroll
+    [infiniteScrollDistance]="1"
+    [scrollWindow]="false"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="nextPage()"
+    *ngIf="a.length > 0; else loadingRef"
+  >
     <ng-container [ngSwitch]="activity.activityType" *ngFor="let activity of a">
       <custom-media
         *ngSwitchCase="activityType.userTask"
@@ -126,26 +134,6 @@
       </custom-media>
     </ng-container>
   </div>
-
-  <ng-container
-    infiniteScroll
-    [infiniteScrollDistance]="1"
-    [infiniteScrollThrottle]="50"
-    (scrolled)="nextPage()"
-    [fromRoot]="true"
-    infiniteScrollContainer=".page-wrap"
-    page-wrap
-  ></ng-container>
-
-  <hr
-    style="margin: 1.5em"
-    infiniteScroll
-    [infiniteScrollDistance]="1"
-    [infiniteScrollThrottle]="50"
-    (scrolled)="nextPage()"
-    [fromRoot]="true"
-    infiniteScrollContainer=".task-details .content"
-  />
 
   <ng-template *ngIf="loading" [ngTemplateOutlet]="loadingRef"></ng-template>
 </ng-container>
