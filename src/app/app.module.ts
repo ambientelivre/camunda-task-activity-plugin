@@ -15,9 +15,11 @@ import { MediaComponent } from "./components/activity/media/media.component";
 import { TaskActivityComponent } from "./pages/task-activity/task-activity.component";
 import { TaskActivityTranslateLoader } from "./task-activity-translate-loader";
 import { TaskActivityTranslateLoaderFallback } from "./task-activity-translate-loader-fallback";
+import { InfiniteScrollModule } from "ngx-infinite-scroll";
+import { LoadingComponent } from './components/loading/loading.component';
 
 @NgModule({
-  declarations: [TaskActivityComponent, MediaComponent],
+  declarations: [TaskActivityComponent, MediaComponent, LoadingComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
@@ -33,6 +35,7 @@ import { TaskActivityTranslateLoaderFallback } from "./task-activity-translate-l
         deps: [HttpClient],
       },
     }),
+    InfiniteScrollModule,
     NgHttpCachingModule.forRoot({ lifetime: 10_000 }),
   ],
   entryComponents: [TaskActivityComponent],

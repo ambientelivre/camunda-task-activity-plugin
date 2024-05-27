@@ -1,91 +1,105 @@
-<div style="display: grid; gap: 1.5em">
-  <ng-container
-    [ngSwitch]="activity.activityType"
-    *ngFor="let activity of activity$ | async as a"
-  >
-    <custom-media
-      *ngSwitchCase="activityType.userTask"
-      glyphicon="user"
-      [headerTitle]="
-        getUserFullName(
-          activityIdHasMultiInstanceBody(activity.activityId)
-            ? activity.user
-            : a[activity.parentUserTaskActivityIndex]?.user || activity.user
-        )
-      "
-      altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
-      headerSubTitle="{{ activity.startTime | date : 'short' }}"
-    >
-      <div
-        *ngIf="
-          activityIdHasMultiInstanceBody(activity.activityId);
-          else currentTask
-        "
-        innerHTML="{{
-          'END_ACTIVITY_FLOW'
-            | translate
-              : {
-                  activityName: activity.activityName
-                }
-        }}"
-      ></div>
+<ng-template #loadingRef>
+  <custom-loading *ngIf="loading"></custom-loading>
+</ng-template>
 
-      <ng-template #currentTask>
+<ng-container *ngIf="activity$ | async as a; else loadingRef">
+  <div
+    infiniteScroll
+    [infiniteScrollDistance]="1"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="nextPage()"
+    [infiniteScrollContainer]="taskDetailsContainer"
+    style="display: grid; gap: 1.5em"
+    *ngIf="a.length > 0; else loadingRef"
+  >
+    <ng-container [ngSwitch]="activity.activityType" *ngFor="let activity of a">
+      <custom-media
+        *ngSwitchCase="activityType.userTask"
+        glyphicon="user"
+        [headerTitle]="
+          getUserFullName(
+            activityIdHasMultiInstanceBody(activity.activityId)
+              ? activity.user
+              : a[activity.parentUserTaskActivityIndex]?.user || activity.user
+          )
+        "
+        altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
+        headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      >
         <div
-          *ngIf="a[activity.parentUserTaskActivityIndex] as p; else parentTask"
+          *ngIf="
+            activityIdHasMultiInstanceBody(activity.activityId);
+            else currentTask
+          "
           innerHTML="{{
-            'ACTIVITY_MOVES_TO'
+            'END_ACTIVITY_FLOW'
               | translate
                 : {
-                    parentActivityName: p.activityName,
                     activityName: activity.activityName
                   }
           }}"
         ></div>
+
+        <ng-template #currentTask>
+          <div
+            *ngIf="
+              a[activity.parentUserTaskActivityIndex] as p;
+              else parentTask
+            "
+            innerHTML="{{
+              'ACTIVITY_MOVES_TO'
+                | translate
+                  : {
+                      parentActivityName: p.activityName,
+                      activityName: activity.activityName
+                    }
+            }}"
+          ></div>
+        </ng-template>
+
+        <ng-template #parentTask>
+          {{ "START_ACTIVITY_EVENT_NAME" | translate }}
+          <b>{{ activity.activityName }}</b>
+        </ng-template>
+      </custom-media>
+
+      <ng-template
+        *ngSwitchCase="activityType.endEvent"
+        [ngTemplateOutlet]="endEventType"
+      ></ng-template>
+      <ng-template
+        *ngSwitchCase="activityType.noneEndEvent"
+        [ngTemplateOutlet]="endEventType"
+      ></ng-template>
+      <ng-template #endEventType>
+        <custom-media
+          [headerTitle]="activity.activityName"
+          altHeaderTitle="{{ 'END_ACTIVITY_EVENT_NAME' | translate }}"
+          glyphicon="log-out"
+          headerSubTitle="{{ activity.startTime | date : 'short' }}"
+        >
+          <div
+            [innerHTML]="
+              'END_ACTIVITY_FLOW'
+                | translate
+                  : {
+                      activityName: getSubProcessActivityName(activity)
+                    }
+            "
+          ></div>
+        </custom-media>
       </ng-template>
 
-      <ng-template #parentTask>
-        {{ "START_ACTIVITY_EVENT_NAME" | translate }}
-        <b>{{ activity.activityName }}</b>
-      </ng-template>
-    </custom-media>
-
-    <custom-media
-      *ngSwitchCase="activityType.startEvent"
-      [headerTitle]="activity.activityName"
-      altHeaderTitle="{{ 'START_ACTIVITY_EVENT_NAME' | translate }}"
-      glyphicon="log-in"
-      headerSubTitle="{{ activity.startTime | date : 'short' }}"
-    >
-      <div
-        [innerHTML]="
-          'START_ACTIVITY_FLOW'
-            | translate
-              : {
-                  activityName: getSubProcessActivityName(activity)
-                }
-        "
-      ></div>
-    </custom-media>
-
-    <ng-template
-      *ngSwitchCase="activityType.endEvent"
-      [ngTemplateOutlet]="endEventType"
-    ></ng-template>
-    <ng-template
-      *ngSwitchCase="activityType.noneEndEvent"
-      [ngTemplateOutlet]="endEventType"
-    ></ng-template>
-    <ng-template #endEventType>
       <custom-media
+        *ngSwitchCase="activityType.startEvent"
         [headerTitle]="activity.activityName"
-        altHeaderTitle="{{ 'END_ACTIVITY_EVENT_NAME' | translate }}"
-        glyphicon="log-out"
+        altHeaderTitle="{{ 'START_ACTIVITY_EVENT_NAME' | translate }}"
+        glyphicon="log-in"
         headerSubTitle="{{ activity.startTime | date : 'short' }}"
       >
         <div
           [innerHTML]="
-            'END_ACTIVITY_FLOW'
+            'START_ACTIVITY_FLOW'
               | translate
                 : {
                     activityName: getSubProcessActivityName(activity)
@@ -93,24 +107,26 @@
           "
         ></div>
       </custom-media>
-    </ng-template>
 
-    <custom-media
-      *ngSwitchCase="activityType.serviceTask"
-      altHeaderTitle="{{ 'SERVICE_ACTIVITY_EVENT_NAME' | translate }}"
-      [headerTitle]="activity.activityName"
-      glyphicon="cog"
-      headerSubTitle="{{ activity.startTime | date : 'short' }}"
-    >
-    </custom-media>
+      <custom-media
+        *ngSwitchCase="activityType.serviceTask"
+        altHeaderTitle="{{ 'SERVICE_ACTIVITY_EVENT_NAME' | translate }}"
+        [headerTitle]="activity.activityName"
+        glyphicon="cog"
+        headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      >
+      </custom-media>
 
-    <custom-media
-      *ngSwitchCase="activityType.businessRuleTask"
-      altHeaderTitle="{{ 'BUSINESS_ACTIVITY_EVENT_NAME' | translate }}"
-      [headerTitle]="activity.activityName"
-      glyphicon="list-alt"
-      headerSubTitle="{{ activity.startTime | date : 'short' }}"
-    >
-    </custom-media>
-  </ng-container>
-</div>
+      <custom-media
+        *ngSwitchCase="activityType.businessRuleTask"
+        altHeaderTitle="{{ 'BUSINESS_ACTIVITY_EVENT_NAME' | translate }}"
+        [headerTitle]="activity.activityName"
+        glyphicon="list-alt"
+        headerSubTitle="{{ activity.startTime | date : 'short' }}"
+      >
+      </custom-media>
+    </ng-container>
+  </div>
+
+  <ng-template *ngIf="loading" [ngTemplateOutlet]="loadingRef"></ng-template>
+</ng-container>

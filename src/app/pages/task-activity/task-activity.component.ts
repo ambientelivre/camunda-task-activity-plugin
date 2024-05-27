@@ -1,5 +1,14 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Observable, concatAll, map, of, switchMap, toArray } from "rxjs";
+import {
+  BehaviorSubject,
+  Observable,
+  concatAll,
+  map,
+  of,
+  switchMap,
+  tap,
+  toArray,
+} from "rxjs";
 import { ActivityType } from "src/app/process-instance/activity/activity-type";
 import { User } from "src/app/user/user";
 import { UserService } from "src/app/user/user.service";
@@ -7,11 +16,10 @@ import { Activity } from "../../process-instance/activity/activity";
 import { ActivityService } from "../../process-instance/activity/activity.service";
 import { TaskService } from "../../process-instance/task/task.service";
 
-export type TaskActivity = Activity &
-  Partial<{
-    user: User;
-    parentUserTaskActivityIndex: number;
-  }>;
+export interface UserTaskActivity extends Activity {
+  user: User;
+  parentUserTaskActivityIndex: number;
+}
 
 @Component({
   selector: "custom-task-activity",
@@ -19,8 +27,13 @@ export type TaskActivity = Activity &
   styleUrls: ["./task-activity.component.css"],
 })
 export class TaskActivityComponent implements OnInit {
-  activity$: Observable<TaskActivity[]>;
+  activity$: Observable<UserTaskActivity[]>;
   activityType = ActivityType;
+  taskDetailsContainer = document.querySelector(".task-details .content");
+  loading = false;
+  private activity: UserTaskActivity[] = [];
+  private currentPage = new BehaviorSubject(0);
+  private maxResults = 20;
   private subProcessActivityName = new Map<string, string>();
   private activityIdMultiInstanceBody = new Map<string, void>();
 
@@ -74,65 +87,93 @@ export class TaskActivityComponent implements OnInit {
     return index === -1 ? -1 : index + startIndex;
   }
 
+  nextPage() {
+    this.currentPage.next(this.currentPage.value + 1);
+  }
+
   ngOnInit() {
-    this.activity$ = this.taskService.findOneTaskById(this.taskid).pipe(
+    const task = this.taskService.findOneTaskById(this.taskid);
+
+    this.activity$ = task.pipe(
       switchMap(({ processInstanceId }) =>
-        this.activityService.findManyActivity({
-          processInstanceId,
-          sortBy: "occurrence",
-          sortOrder: "desc",
-        })
-      ),
-      switchMap((activity) =>
-        activity.map((_activity: TaskActivity, i) => {
-          _activity.activityName =
-            _activity.activityName || _activity.activityId;
+        this.currentPage.pipe(
+          tap(() => {
+            this.loading = true;
+          }),
+          switchMap((firstResult) =>
+            this.activityService
+              .findManyActivity({
+                processInstanceId,
+                sortBy: "occurrence",
+                sortOrder: "desc",
+                firstResult: firstResult * this.maxResults,
+                maxResults: this.maxResults,
+              })
+              .pipe(
+                switchMap((activity) =>
+                  activity.map((_activity: UserTaskActivity, i) => {
+                    _activity.activityName =
+                      _activity.activityName || _activity.activityId;
 
-          switch (_activity.activityType) {
-            case ActivityType.multiInstanceBody: {
-              const activityId = this.getMultiInstanceBodyActivityId(
-                _activity.activityId
-              );
+                    switch (_activity.activityType) {
+                      case ActivityType.multiInstanceBody: {
+                        const activityId = this.getMultiInstanceBodyActivityId(
+                          _activity.activityId
+                        );
 
-              if (activityId) {
-                this.activityIdMultiInstanceBody.set(activityId);
-              }
+                        if (activityId) {
+                          this.activityIdMultiInstanceBody.set(activityId);
+                        }
 
-              break;
-            }
+                        break;
+                      }
 
-            case ActivityType.subProcess: {
-              this.subProcessActivityName.set(
-                _activity.activityId,
-                _activity.activityName
-              );
+                      case ActivityType.subProcess: {
+                        this.subProcessActivityName.set(
+                          _activity.activityId,
+                          _activity.activityName
+                        );
 
-              break;
-            }
+                        break;
+                      }
 
-            default: {
-              break;
-            }
+                      default: {
+                        break;
+                      }
 
-            case ActivityType.userTask: {
-              return this.userService.findOneUserById(_activity.assignee).pipe(
-                map((user) => {
-                  _activity.user = user;
+                      case ActivityType.userTask: {
+                        return this.userService
+                          .findOneUserById(_activity.assignee)
+                          .pipe(
+                            map((user) => {
+                              _activity.user = user;
 
-                  _activity.parentUserTaskActivityIndex =
-                    this.getParentUserTaskActivityIndex(activity, i);
+                              _activity.parentUserTaskActivityIndex =
+                                this.getParentUserTaskActivityIndex(
+                                  activity,
+                                  i
+                                );
 
-                  return _activity;
-                })
-              );
-            }
-          }
+                              return _activity;
+                            })
+                          );
+                      }
+                    }
 
-          return of(_activity);
-        })
-      ),
-      concatAll(),
-      toArray()
+                    return of(_activity);
+                  })
+                ),
+                concatAll(),
+                toArray(),
+                tap((activity) => {
+                  this.loading = false;
+                  this.activity = this.activity.concat(activity);
+                }),
+                map(() => this.activity)
+              )
+          )
+        )
+      )
     );
   }
 }
