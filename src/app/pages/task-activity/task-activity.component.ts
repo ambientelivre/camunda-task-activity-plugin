@@ -18,7 +18,6 @@ import { TaskService } from "../../process-instance/task/task.service";
 
 export interface UserTaskActivity extends Activity {
   user: User;
-  parentUserTaskActivityIndex: number;
 }
 
 @Component({
@@ -32,7 +31,7 @@ export class TaskActivityComponent implements OnInit {
   loading = false;
   hasNextPage = true;
 
-  private activity: UserTaskActivity[] = [];
+  private activity: Activity[] = [];
   private currentPage = new BehaviorSubject(0);
   private maxResults = 20;
   private subProcessActivityName = new Map<string, string>();
@@ -74,7 +73,10 @@ export class TaskActivityComponent implements OnInit {
     return activityId.split("#")[0];
   }
 
-  getParentUserTaskActivityIndex(activity: Activity[], currentIndex: number) {
+  getParentUserTaskActivity(
+    activity: UserTaskActivity[],
+    currentIndex: number
+  ) {
     const startIndex = currentIndex + 1;
 
     const index = activity
@@ -85,7 +87,7 @@ export class TaskActivityComponent implements OnInit {
           executionId !== activity[currentIndex].executionId
       );
 
-    return index === -1 ? -1 : index + startIndex;
+    return index === -1 ? null : activity[index + startIndex];
   }
 
   nextPage() {
@@ -114,7 +116,7 @@ export class TaskActivityComponent implements OnInit {
               })
               .pipe(
                 switchMap((activity) =>
-                  activity.map((_activity: UserTaskActivity, i) => {
+                  activity.map((_activity: UserTaskActivity) => {
                     _activity.activityName =
                       _activity.activityName || _activity.activityId;
 
@@ -151,12 +153,6 @@ export class TaskActivityComponent implements OnInit {
                             map((user) => {
                               _activity.user = user;
 
-                              _activity.parentUserTaskActivityIndex =
-                                this.getParentUserTaskActivityIndex(
-                                  activity,
-                                  i
-                                );
-
                               return _activity;
                             })
                           );
@@ -170,10 +166,10 @@ export class TaskActivityComponent implements OnInit {
                 toArray(),
                 tap((activity) => {
                   this.loading = false;
-                  this.hasNextPage = activity.length === this.maxResults;
                   this.activity = this.activity.concat(activity);
+                  this.hasNextPage = activity.length === this.maxResults;
                 }),
-                map(() => this.activity)
+                map(() => this.activity as UserTaskActivity[])
               )
           )
         )
