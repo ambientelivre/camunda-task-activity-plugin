@@ -36,29 +36,27 @@
                 : x.parentUserTaskActivity?.user || activity.user
             )
           "
-          altHeaderTitle="{{ 'NO_ASSIGN_USER_TASK' | translate }}"
-          headerSubTitle="{{
+          [altHeaderTitle]="'NO_ASSIGN_USER_TASK' | translate"
+          [headerSubTitle]="
             activity.endTime || activity.startTime | date : 'short'
-          }}"
+          "
         >
           <div
             *ngIf="
               activityIdHasMultiInstanceBody(activity.activityId);
-              else currentTask
+              else currentTaskRef
             "
-            innerHTML="{{
-              'END_ACTIVITY_FLOW'
-                | translate
-                  : {
-                      activityName: activity.activityName
-                    }
-            }}"
-          ></div>
+          >
+            <ng-template
+              [ngTemplateOutlet]="endActivityRef"
+              *ngIf="activity.completeScope; else startActivityRef"
+            ></ng-template>
+          </div>
 
-          <ng-template #currentTask>
+          <ng-template #currentTaskRef>
             <div
-              *ngIf="x.parentUserTaskActivity; else parentTask"
-              innerHTML="{{
+              *ngIf="x.parentUserTaskActivity; else startActivityRef"
+              [innerHTML]="
                 'ACTIVITY_MOVES_TO'
                   | translate
                     : {
@@ -66,31 +64,26 @@
                           x.parentUserTaskActivity.activityName,
                         activityName: activity.activityName
                       }
-              }}"
+              "
             ></div>
-          </ng-template>
-
-          <ng-template #parentTask>
-            {{ "START_ACTIVITY_EVENT_NAME" | translate }}
-            <b>{{ activity.activityName }}</b>
           </ng-template>
         </custom-media>
       </ng-container>
 
       <ng-template
         *ngSwitchCase="activityType.endEvent"
-        [ngTemplateOutlet]="endEventType"
+        [ngTemplateOutlet]="endEventTypeRef"
       ></ng-template>
       <ng-template
         *ngSwitchCase="activityType.noneEndEvent"
-        [ngTemplateOutlet]="endEventType"
+        [ngTemplateOutlet]="endEventTypeRef"
       ></ng-template>
-      <ng-template #endEventType>
+      <ng-template #endEventTypeRef>
         <custom-media
           [headerTitle]="activity.activityName"
-          altHeaderTitle="{{ 'END_ACTIVITY_EVENT_NAME' | translate }}"
+          [altHeaderTitle]="'END_ACTIVITY_EVENT_NAME' | translate"
           glyphicon="log-out"
-          headerSubTitle="{{ activity.startTime | date : 'short' }}"
+          [headerSubTitle]="activity.startTime | date : 'short'"
         >
           <div
             [innerHTML]="
@@ -107,10 +100,32 @@
       <custom-media
         *ngSwitchCase="activityType.startEvent"
         [headerTitle]="activity.activityName"
-        altHeaderTitle="{{ 'START_ACTIVITY_EVENT_NAME' | translate }}"
+        [altHeaderTitle]="'START_ACTIVITY_EVENT_NAME' | translate"
         glyphicon="log-in"
-        headerSubTitle="{{ activity.startTime | date : 'short' }}"
+        [headerSubTitle]="activity.startTime | date : 'short'"
       >
+        <ng-template [ngTemplateOutlet]="startActivityRef"></ng-template>
+      </custom-media>
+
+      <custom-media
+        *ngSwitchCase="activityType.serviceTask"
+        [altHeaderTitle]="'SERVICE_ACTIVITY_EVENT_NAME' | translate"
+        [headerTitle]="activity.activityName"
+        glyphicon="cog"
+        [headerSubTitle]="activity.startTime | date : 'short'"
+      >
+      </custom-media>
+
+      <custom-media
+        *ngSwitchCase="activityType.businessRuleTask"
+        [altHeaderTitle]="'BUSINESS_ACTIVITY_EVENT_NAME' | translate"
+        [headerTitle]="activity.activityName"
+        glyphicon="list-alt"
+        [headerSubTitle]="activity.startTime | date : 'short'"
+      >
+      </custom-media>
+
+      <ng-template #startActivityRef>
         <div
           [innerHTML]="
             'START_ACTIVITY_FLOW'
@@ -120,25 +135,19 @@
                   }
           "
         ></div>
-      </custom-media>
+      </ng-template>
 
-      <custom-media
-        *ngSwitchCase="activityType.serviceTask"
-        altHeaderTitle="{{ 'SERVICE_ACTIVITY_EVENT_NAME' | translate }}"
-        [headerTitle]="activity.activityName"
-        glyphicon="cog"
-        headerSubTitle="{{ activity.startTime | date : 'short' }}"
-      >
-      </custom-media>
-
-      <custom-media
-        *ngSwitchCase="activityType.businessRuleTask"
-        altHeaderTitle="{{ 'BUSINESS_ACTIVITY_EVENT_NAME' | translate }}"
-        [headerTitle]="activity.activityName"
-        glyphicon="list-alt"
-        headerSubTitle="{{ activity.startTime | date : 'short' }}"
-      >
-      </custom-media>
+      <ng-template #endActivityRef>
+        <div
+          [innerHTML]="
+            'END_ACTIVITY_FLOW'
+              | translate
+                : {
+                    activityName: activity.activityName
+                  }
+          "
+        ></div>
+      </ng-template>
     </ng-container>
   </div>
 
