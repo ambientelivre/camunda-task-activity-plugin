@@ -91,9 +91,7 @@ export class TaskActivityComponent implements OnInit {
   }
 
   nextPage() {
-    if (this.hasNextPage) {
-      this.currentPage.next(this.currentPage.value + 1);
-    }
+    this.currentPage.next(this.currentPage.value + 1);
   }
 
   ngOnInit() {

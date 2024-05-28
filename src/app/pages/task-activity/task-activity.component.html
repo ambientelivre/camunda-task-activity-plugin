@@ -18,6 +18,7 @@
     [scrollWindow]="false"
     [infiniteScrollThrottle]="50"
     (scrolled)="nextPage()"
+    [infiniteScrollDisabled]="!hasNextPage"
     *ngIf="a.length > 0; else loadingRef"
   >
     <ng-container
