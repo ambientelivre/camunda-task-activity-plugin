@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { TranslateLoader } from "@ngx-translate/core";
 
 @Injectable({ providedIn: "root" })
-export class TaskActivityTranslateLoader implements TranslateLoader {
+export class TranslateLoaderImpl implements TranslateLoader {
   constructor(private httpClient: HttpClient) {}
 
   getTranslation(lang: string) {

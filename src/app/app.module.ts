@@ -13,10 +13,10 @@ import {
 import { NgHttpCachingModule } from "ng-http-caching";
 import { MediaComponent } from "./components/activity/media/media.component";
 import { TaskActivityComponent } from "./pages/task-activity/task-activity.component";
-import { TaskActivityTranslateLoader } from "./task-activity-translate-loader";
-import { TaskActivityTranslateLoaderFallback } from "./task-activity-translate-loader-fallback";
 import { InfiniteScrollModule } from "ngx-infinite-scroll";
-import { LoadingComponent } from './components/loading/loading.component';
+import { LoadingComponent } from "./components/loading/loading.component";
+import { TranslateLoaderFallback } from "./translate-loader-fallback";
+import { TranslateLoaderImpl } from "./translate-loader-impl";
 
 @NgModule({
   declarations: [TaskActivityComponent, MediaComponent, LoadingComponent],
@@ -26,12 +26,12 @@ import { LoadingComponent } from './components/loading/loading.component';
     TranslateModule.forRoot({
       missingTranslationHandler: {
         provide: MissingTranslationHandler,
-        useClass: TaskActivityTranslateLoaderFallback,
+        useClass: TranslateLoaderFallback,
         deps: [HttpClient],
       },
       loader: {
         provide: TranslateLoader,
-        useClass: TaskActivityTranslateLoader,
+        useClass: TranslateLoaderImpl,
         deps: [HttpClient],
       },
     }),
