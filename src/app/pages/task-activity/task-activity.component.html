@@ -51,14 +51,16 @@
             "
           >
             <ng-template
-              [ngTemplateOutlet]="endActivityRef"
-              *ngIf="activity.completeScope; else startTaskRef"
+              [ngTemplateOutlet]="activityCompletedUserTaskRef"
             ></ng-template>
           </div>
 
           <ng-template #currentTaskRef>
             <div
-              *ngIf="x.parentUserTaskActivity; else startTaskRef"
+              *ngIf="
+                x.parentUserTaskActivity;
+                else activityCompletedUserTaskRef
+              "
               [innerHTML]="
                 'ACTIVITY_MOVES_TO'
                   | translate
@@ -71,10 +73,10 @@
             ></div>
           </ng-template>
 
-          <ng-template #startTaskRef>
+          <ng-template #activityCompletedUserTaskRef>
             <div
               [innerHTML]="
-                'START_ACTIVITY_FLOW'
+                (activity.endTime ? 'END_ACTIVITY_FLOW' : 'START_ACTIVITY_FLOW')
                   | translate
                     : {
                         activityName: activity.activityName
@@ -100,15 +102,7 @@
           glyphicon="log-out"
           [headerSubTitle]="activity.startTime | date : 'short'"
         >
-          <div
-            [innerHTML]="
-              'END_ACTIVITY_FLOW'
-                | translate
-                  : {
-                      activityName: getSubProcessActivityName(activity)
-                    }
-            "
-          ></div>
+          <ng-template [ngTemplateOutlet]="activityCompletedRef"></ng-template>
         </custom-media>
       </ng-template>
 
@@ -119,7 +113,7 @@
         glyphicon="log-in"
         [headerSubTitle]="activity.startTime | date : 'short'"
       >
-        <ng-template [ngTemplateOutlet]="startActivityRef"></ng-template>
+        <ng-template [ngTemplateOutlet]="activityCompletedRef"></ng-template>
       </custom-media>
 
       <custom-media
@@ -140,25 +134,13 @@
       >
       </custom-media>
 
-      <ng-template #startActivityRef>
+      <ng-template #activityCompletedRef>
         <div
           [innerHTML]="
-            'START_ACTIVITY_FLOW'
+            (activity.endTime ? 'END_ACTIVITY_FLOW' : 'START_ACTIVITY_FLOW')
               | translate
                 : {
                     activityName: getSubProcessActivityName(activity)
-                  }
-          "
-        ></div>
-      </ng-template>
-
-      <ng-template #endActivityRef>
-        <div
-          [innerHTML]="
-            'END_ACTIVITY_FLOW'
-              | translate
-                : {
-                    activityName: activity.activityName
                   }
           "
         ></div>
