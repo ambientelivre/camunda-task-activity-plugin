@@ -102,7 +102,15 @@
           glyphicon="log-out"
           [headerSubTitle]="activity.startTime | date : 'short'"
         >
-          <ng-template [ngTemplateOutlet]="activityCompletedRef"></ng-template>
+          <div
+            [innerHTML]="
+              'END_ACTIVITY_FLOW'
+                | translate
+                  : {
+                      activityName: getSubProcessActivityName(activity)
+                    }
+            "
+          ></div>
         </custom-media>
       </ng-template>
 
@@ -113,7 +121,15 @@
         glyphicon="log-in"
         [headerSubTitle]="activity.startTime | date : 'short'"
       >
-        <ng-template [ngTemplateOutlet]="activityCompletedRef"></ng-template>
+        <div
+          [innerHTML]="
+            'START_ACTIVITY_FLOW'
+              | translate
+                : {
+                    activityName: getSubProcessActivityName(activity)
+                  }
+          "
+        ></div>
       </custom-media>
 
       <custom-media
@@ -133,18 +149,6 @@
         [headerSubTitle]="activity.startTime | date : 'short'"
       >
       </custom-media>
-
-      <ng-template #activityCompletedRef>
-        <div
-          [innerHTML]="
-            (activity.endTime ? 'END_ACTIVITY_FLOW' : 'START_ACTIVITY_FLOW')
-              | translate
-                : {
-                    activityName: getSubProcessActivityName(activity)
-                  }
-          "
-        ></div>
-      </ng-template>
     </ng-container>
   </div>
 
