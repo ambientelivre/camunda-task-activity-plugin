@@ -16,7 +16,7 @@ import { TaskActivityComponent } from "./pages/task-activity/task-activity.compo
 import { InfiniteScrollModule } from "ngx-infinite-scroll";
 import { LoadingComponent } from "./components/loading/loading.component";
 import { TranslateLoaderFallback } from "./translate-loader-fallback";
-import { TranslateLoaderImpl } from "./translate-loader-impl";
+import { TranslateLoaderHttpImpl } from "./translate-loader-http-impl";
 
 @NgModule({
   declarations: [TaskActivityComponent, MediaComponent, LoadingComponent],
@@ -31,7 +31,7 @@ import { TranslateLoaderImpl } from "./translate-loader-impl";
       },
       loader: {
         provide: TranslateLoader,
-        useClass: TranslateLoaderImpl,
+        useClass: TranslateLoaderHttpImpl,
         deps: [HttpClient],
       },
     }),
