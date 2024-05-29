@@ -52,19 +52,31 @@
           >
             <ng-template
               [ngTemplateOutlet]="endActivityRef"
-              *ngIf="activity.completeScope; else startActivityRef"
+              *ngIf="activity.completeScope; else startTaskRef"
             ></ng-template>
           </div>
 
           <ng-template #currentTaskRef>
             <div
-              *ngIf="x.parentUserTaskActivity; else startActivityRef"
+              *ngIf="x.parentUserTaskActivity; else startTaskRef"
               [innerHTML]="
                 'ACTIVITY_MOVES_TO'
                   | translate
                     : {
                         parentActivityName:
                           x.parentUserTaskActivity.activityName,
+                        activityName: activity.activityName
+                      }
+              "
+            ></div>
+          </ng-template>
+
+          <ng-template #startTaskRef>
+            <div
+              [innerHTML]="
+                'START_ACTIVITY_FLOW'
+                  | translate
+                    : {
                         activityName: activity.activityName
                       }
               "
