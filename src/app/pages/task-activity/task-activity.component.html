@@ -1,26 +1,21 @@
-<ng-template #loadingRef>
-  <custom-loading *ngIf="loading"></custom-loading>
-</ng-template>
-
-<ng-container *ngIf="activity$ | async as a; else loadingRef">
+<div
+  style="
+    overflow-y: scroll;
+    height: 36em;
+    border-bottom: 1px solid #ddd;
+    padding: 0 1.5em;
+    padding-bottom: 3em;
+  "
+  infiniteScroll
+  [infiniteScrollDistance]="2.5"
+  [scrollWindow]="false"
+  [infiniteScrollThrottle]="50"
+  (scrolled)="nextPage()"
+  [infiniteScrollDisabled]="!hasNextPage"
+>
   <div
-    style="
-      height: 36em;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5em;
-      overflow-y: scroll;
-      border-bottom: 1px solid #ddd;
-      padding: 0 1.5em;
-      padding-bottom: 3em;
-    "
-    infiniteScroll
-    [infiniteScrollDistance]="1"
-    [scrollWindow]="false"
-    [infiniteScrollThrottle]="50"
-    (scrolled)="nextPage()"
-    [infiniteScrollDisabled]="!hasNextPage"
-    *ngIf="a.length > 0; else loadingRef"
+    style="display: flex; flex-direction: column; gap: 1.5em"
+    *ngIf="activity$ | async as a"
   >
     <ng-container
       [ngSwitch]="activity.activityType"
@@ -152,5 +147,5 @@
     </ng-container>
   </div>
 
-  <ng-template [ngTemplateOutlet]="loadingRef"></ng-template>
-</ng-container>
+  <custom-loading *ngIf="loading"></custom-loading>
+</div>

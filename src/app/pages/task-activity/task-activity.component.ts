@@ -33,7 +33,7 @@ export class TaskActivityComponent implements OnInit {
 
   private activity: UserActivity[] = [];
   private currentPage = new BehaviorSubject(0);
-  private maxResults = 16;
+  private maxResults = 15;
   private subProcessActivityName = new Map<string, string>();
   private activityIdMultiInstanceBody = new Map<string, void>();
 
