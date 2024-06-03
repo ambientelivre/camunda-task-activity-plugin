@@ -94,13 +94,15 @@ export class TaskActivityComponent implements OnInit {
           activityId,
           parentActivityInstanceId,
           rootProcessInstanceId,
+          completeScope,
         }) =>
           activityType === ActivityType.userTask &&
           activityId !== activity[currentIndex].activityId &&
           (parentActivityInstanceId ===
             activity[currentIndex].parentActivityInstanceId ||
             rootProcessInstanceId ===
-              activity[currentIndex].parentActivityInstanceId)
+              activity[currentIndex].parentActivityInstanceId ||
+            (completeScope && !activity[currentIndex].completeScope))
       );
 
     return index === -1 ? null : activity[index + startIndex];
