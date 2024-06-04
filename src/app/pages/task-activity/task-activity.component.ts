@@ -118,6 +118,9 @@ export class TaskActivityComponent implements OnInit {
     this.activity$ = this.taskService.findOneTaskById(this.taskid).pipe(
       switchMap(({ processInstanceId }) =>
         this.currentPage.pipe(
+          tap(() => {
+            this.loading = true;
+          }),
           switchMap((firstResult) =>
             this.activityService
               .findManyActivity({
