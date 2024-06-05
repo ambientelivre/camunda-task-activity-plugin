@@ -29,9 +29,8 @@
           glyphicon="user"
           [headerTitle]="
             getUserFullName(
-              activityIdHasMultiInstanceBody(activity.activityId)
-                ? activity.user
-                : x.parentUserTaskActivity?.user || activity.user
+              x.parentUserTaskActivity?.user ||
+                (activity.assignee && activity.user)
             )
           "
           [altHeaderTitle]="'NO_ASSIGN_USER_TASK' | translate"
@@ -40,32 +39,23 @@
           "
         >
           <div
-            *ngIf="
-              activityIdHasMultiInstanceBody(activity.activityId);
-              else currentTaskRef
+            *ngIf="x.parentUserTaskActivity; else activitiyParentUserTask"
+            [innerHTML]="
+              'ACTIVITY_MOVES_TO'
+                | translate
+                  : {
+                      parentActivityName: x.parentUserTaskActivity.activityName,
+                      activityName: activity.activityName
+                    }
             "
-          >
-            <ng-template
-              [ngTemplateOutlet]="activityCompletedUserTaskRef"
-            ></ng-template>
-          </div>
+          ></div>
 
-          <ng-template #currentTaskRef>
-            <div
-              *ngIf="
-                x.parentUserTaskActivity;
-                else activityCompletedUserTaskRef
-              "
-              [innerHTML]="
-                'ACTIVITY_MOVES_TO'
-                  | translate
-                    : {
-                        parentActivityName:
-                          x.parentUserTaskActivity.activityName,
-                        activityName: activity.activityName
-                      }
-              "
-            ></div>
+          <ng-template #activitiyParentUserTask>
+            <div *ngIf="activityIdHasMultiInstanceBody(activity.activityId)">
+              <ng-template
+                [ngTemplateOutlet]="activityCompletedUserTaskRef"
+              ></ng-template>
+            </div>
           </ng-template>
 
           <ng-template #activityCompletedUserTaskRef>

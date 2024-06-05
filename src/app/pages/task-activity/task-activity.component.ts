@@ -94,15 +94,13 @@ export class TaskActivityComponent implements OnInit {
           activityId,
           parentActivityInstanceId,
           rootProcessInstanceId,
-          completeScope,
         }) =>
           activityType === ActivityType.userTask &&
           activityId !== activity[currentIndex].activityId &&
           (parentActivityInstanceId ===
             activity[currentIndex].parentActivityInstanceId ||
             rootProcessInstanceId ===
-              activity[currentIndex].parentActivityInstanceId ||
-            (completeScope && !activity[currentIndex].completeScope))
+              activity[currentIndex].parentActivityInstanceId)
       );
 
     return index === -1 ? null : activity[index + startIndex];
@@ -125,7 +123,7 @@ export class TaskActivityComponent implements OnInit {
             this.activityService
               .findManyActivity({
                 processInstanceId,
-                sortBy: "occurrence",
+                sortBy: "endTime",
                 sortOrder: "desc",
                 firstResult: firstResult * this.maxResults,
                 maxResults: this.maxResults,
@@ -169,6 +167,17 @@ export class TaskActivityComponent implements OnInit {
                             map((user) => {
                               _activity.user = user;
 
+                              const multiInstanceBody =
+                                this.getMultiInstanceBodyActivityId(
+                                  _activity.activityId
+                                );
+
+                              if (multiInstanceBody) {
+                                this.activityIdMultiInstanceBody.set(
+                                  multiInstanceBody
+                                );
+                              }
+
                               return _activity;
                             })
                           );
@@ -182,7 +191,13 @@ export class TaskActivityComponent implements OnInit {
                 toArray(),
                 tap((activity) => {
                   this.loading = false;
-                  this.activity = this.activity.concat(activity);
+                  this.activity = this.activity
+                    .concat(activity)
+                    .sort(
+                      ({ endTime: asc }, { endTime: desc }) =>
+                        (desc ? new Date(desc) : new Date()).getTime() -
+                        (asc ? new Date(asc) : new Date()).getTime()
+                    );
                   this.hasNextPage = activity.length === this.maxResults;
                 }),
                 map(() => this.activity)
