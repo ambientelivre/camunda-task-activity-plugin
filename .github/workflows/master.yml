@@ -36,7 +36,7 @@ jobs:
 
       - name: Generate tag name
         id: generate_tag_name
-        run: echo ::set-output name=tag_name::$(date +'%m%d%H%M%S')
+        run: echo ::set-output name=tag_name::$(date +'%Y-%m-%d-%H_%M_%S')
 
       - name: Create Release
         id: create_release

@@ -16,7 +16,7 @@ import { Activity } from "../../process-instance/activity/activity";
 import { ActivityService } from "../../process-instance/activity/activity.service";
 import { TaskService } from "../../process-instance/task/task.service";
 
-export interface UserActivity extends Activity {
+export interface IActivity extends Activity {
   user: User;
 }
 
@@ -26,12 +26,12 @@ export interface UserActivity extends Activity {
   styleUrls: ["./task-activity.component.css"],
 })
 export class TaskActivityComponent implements OnInit {
-  activity$: Observable<UserActivity[]>;
+  activity$: Observable<IActivity[]>;
   activityType = ActivityType;
   loading = false;
   hasNextPage = true;
 
-  private activity: UserActivity[] = [];
+  private activity: IActivity[] = [];
   private currentPage = new BehaviorSubject(0);
   private maxResults = 15;
   private subProcessActivityName = new Map<string, string>();
@@ -83,7 +83,7 @@ export class TaskActivityComponent implements OnInit {
     return activityId.split("#")[0];
   }
 
-  getParentUserTaskActivity(activity: UserActivity[], currentIndex: number) {
+  getParentUserTaskActivity(activity: IActivity[], currentIndex: number) {
     const startIndex = currentIndex + 1;
 
     const index = activity
@@ -94,15 +94,13 @@ export class TaskActivityComponent implements OnInit {
           activityId,
           parentActivityInstanceId,
           rootProcessInstanceId,
-          completeScope,
         }) =>
           activityType === ActivityType.userTask &&
           activityId !== activity[currentIndex].activityId &&
           (parentActivityInstanceId ===
             activity[currentIndex].parentActivityInstanceId ||
             rootProcessInstanceId ===
-              activity[currentIndex].parentActivityInstanceId ||
-            (completeScope && !activity[currentIndex].completeScope))
+              activity[currentIndex].parentActivityInstanceId)
       );
 
     return index === -1 ? null : activity[index + startIndex];
@@ -118,25 +116,28 @@ export class TaskActivityComponent implements OnInit {
     this.activity$ = this.taskService.findOneTaskById(this.taskid).pipe(
       switchMap(({ processInstanceId }) =>
         this.currentPage.pipe(
+          tap(() => {
+            this.loading = true;
+          }),
           switchMap((firstResult) =>
             this.activityService
               .findManyActivity({
                 processInstanceId,
-                sortBy: "occurrence",
+                sortBy: "endTime",
                 sortOrder: "desc",
                 firstResult: firstResult * this.maxResults,
                 maxResults: this.maxResults,
               })
               .pipe(
                 switchMap((activity) =>
-                  activity.map((_activity: UserActivity) => {
-                    _activity.activityName =
-                      _activity.activityName || _activity.activityId;
+                  activity.map((activity: IActivity) => {
+                    activity.activityName =
+                      activity.activityName || activity.activityId;
 
-                    switch (_activity.activityType) {
+                    switch (activity.activityType) {
                       case ActivityType.multiInstanceBody: {
                         const activityId = this.getMultiInstanceBodyActivityId(
-                          _activity.activityId
+                          activity.activityId
                         );
 
                         if (activityId) {
@@ -148,39 +149,66 @@ export class TaskActivityComponent implements OnInit {
 
                       case ActivityType.subProcess: {
                         this.subProcessActivityName.set(
-                          _activity.activityId,
-                          _activity.activityName
+                          activity.activityId,
+                          activity.activityName
                         );
 
                         break;
                       }
 
-                      default: {
-                        break;
-                      }
-
                       case ActivityType.userTask: {
+                        const activityId = this.getMultiInstanceBodyActivityId(
+                          activity.activityId
+                        );
+
+                        if (activityId) {
+                          this.activityIdMultiInstanceBody.set(activityId);
+                        }
+
                         return this.userService
-                          .findOneUserById(_activity.assignee)
+                          .findOneUserById(activity.assignee)
                           .pipe(
                             map((user) => {
-                              _activity.user = user;
+                              activity.user = user;
 
-                              return _activity;
+                              return activity;
                             })
                           );
                       }
+
+                      default: {
+                        break;
+                      }
                     }
 
-                    return of(_activity);
+                    return of(activity);
                   })
                 ),
                 concatAll(),
                 toArray(),
                 tap((activity) => {
                   this.loading = false;
-                  this.activity = this.activity.concat(activity);
                   this.hasNextPage = activity.length === this.maxResults;
+                  this.activity = this.activity
+                    .concat(activity)
+                    .sort(
+                      (
+                        { endTime: asc1, startTime: asc2 },
+                        { endTime: desc1, startTime: desc2 }
+                      ) =>
+                        (desc1
+                          ? new Date(desc1)
+                          : desc2
+                          ? new Date(desc2)
+                          : new Date()
+                        ).getTime() -
+                        (asc1
+                          ? new Date(asc1)
+                          : asc2
+                          ? new Date(asc2)
+                          : new Date()
+                        ).getTime()
+                    );
                 }),
                 map(() => this.activity)
               )

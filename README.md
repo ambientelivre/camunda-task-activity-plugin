@@ -1,5 +1,7 @@
 # Task Activity Plugin
 
+![badge](https://img.shields.io/badge/Compatibility%20with-7.15%20%3E=-blue) ![badge](https://img.shields.io/badge/plugin-camunda%20tasklist-blue) ![badge](https://img.shields.io/badge/Camunda%20Platform%207-tasklist-blue)
+
 This plugin shows activity history and tasks during the process
 
 ## Features
@@ -31,6 +33,10 @@ This plugin shows activity history and tasks during the process
 ### Infinite scroll
 
 ![screen-recorder](https://github.com/ambientelivre/camunda-task-activity-plugin/assets/89039740/252e060e-bc30-44d4-8c72-a69003519c4d)
+
+## Compatibility
+
+Tested on versions 7.15 and 7.20 Camunda Platform
 
 ## Install
 

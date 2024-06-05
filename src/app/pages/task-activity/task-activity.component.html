@@ -23,52 +23,35 @@
     >
       <ng-container *ngSwitchCase="activityType.userTask">
         <custom-media
-          *ngIf="{
-            parentUserTaskActivity: getParentUserTaskActivity(a, i)
-          } as x"
+          *ngIf="getParentUserTaskActivity(a, i) as p; else activityStartedRef"
           glyphicon="user"
-          [headerTitle]="
-            getUserFullName(
-              activityIdHasMultiInstanceBody(activity.activityId)
-                ? activity.user
-                : x.parentUserTaskActivity?.user || activity.user
-            )
-          "
+          [headerTitle]="getUserFullName(p.user)"
           [altHeaderTitle]="'NO_ASSIGN_USER_TASK' | translate"
           [headerSubTitle]="
             activity.endTime || activity.startTime | date : 'short'
           "
         >
           <div
-            *ngIf="
-              activityIdHasMultiInstanceBody(activity.activityId);
-              else currentTaskRef
+            [innerHTML]="
+              'ACTIVITY_MOVES_TO'
+                | translate
+                  : {
+                      parentActivityName: p.activityName,
+                      activityName: activity.activityName
+                    }
+            "
+          ></div>
+        </custom-media>
+
+        <ng-template #activityStartedRef>
+          <custom-media
+            glyphicon="user"
+            [headerTitle]="getUserFullName(activity.user)"
+            [altHeaderTitle]="'NO_ASSIGN_USER_TASK' | translate"
+            [headerSubTitle]="
+              activity.endTime || activity.startTime | date : 'short'
             "
           >
-            <ng-template
-              [ngTemplateOutlet]="activityCompletedUserTaskRef"
-            ></ng-template>
-          </div>
-
-          <ng-template #currentTaskRef>
-            <div
-              *ngIf="
-                x.parentUserTaskActivity;
-                else activityCompletedUserTaskRef
-              "
-              [innerHTML]="
-                'ACTIVITY_MOVES_TO'
-                  | translate
-                    : {
-                        parentActivityName:
-                          x.parentUserTaskActivity.activityName,
-                        activityName: activity.activityName
-                      }
-              "
-            ></div>
-          </ng-template>
-
-          <ng-template #activityCompletedUserTaskRef>
             <div
               [innerHTML]="
                 (activity.endTime ? 'END_ACTIVITY_FLOW' : 'START_ACTIVITY_FLOW')
@@ -78,8 +61,8 @@
                       }
               "
             ></div>
-          </ng-template>
-        </custom-media>
+          </custom-media>
+        </ng-template>
       </ng-container>
 
       <ng-template
