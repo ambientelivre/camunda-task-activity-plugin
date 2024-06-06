@@ -52,3 +52,10 @@ Tested on versions 7.15 and 7.20 Camunda Platform
      ```
 
 1. Reboot Tomcat
+
+## Services
+For consultancy in Camunda, contact [Ambiente Livre](https://www.ambientelivre.com.br), find out more at: (https://www.ambientelivre.com.br/consultoria/camunda.html)
+* [Training](https://www.ambientelivre.com.br/treinamento/bpm/camunda.html).
+* [Consulting](https://www.ambientelivre.com.br/consultoria/camunda.html).
+* Plugin Development.
+* Mentoring.
