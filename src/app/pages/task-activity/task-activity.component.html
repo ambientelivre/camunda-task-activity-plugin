@@ -23,7 +23,10 @@
     >
       <ng-container *ngSwitchCase="activityType.userTask">
         <custom-media
-          *ngIf="getParentUserTaskActivity(a, i) as p; else activityStartedRef"
+          *ngIf="
+            getParentActivity(activityType.userTask, a, i) as p;
+            else activityStartedRef
+          "
           glyphicon="user"
           [headerTitle]="getUserFullName(p.user)"
           [altHeaderTitle]="'NO_ASSIGN_USER_TASK' | translate"
@@ -85,7 +88,9 @@
               'END_ACTIVITY_FLOW'
                 | translate
                   : {
-                      activityName: getSubProcessActivityName(activity)
+                      activityName: activityInstances.get(
+                        activity.parentActivityInstanceId
+                      ).activityName
                     }
             "
           ></div>
@@ -104,7 +109,9 @@
             'START_ACTIVITY_FLOW'
               | translate
                 : {
-                    activityName: getSubProcessActivityName(activity)
+                    activityName: activityInstances.get(
+                      activity.parentActivityInstanceId
+                    ).activityName
                   }
           "
         ></div>
