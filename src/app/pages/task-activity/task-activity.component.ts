@@ -30,12 +30,11 @@ export class TaskActivityComponent implements OnInit {
   activityType = ActivityType;
   loading = false;
   hasNextPage = true;
+  activityInstances = new Map<string, Activity>();
 
   private activity: IActivity[] = [];
   private currentPage = new BehaviorSubject(0);
   private maxResults = 15;
-  private subProcessActivityName = new Map<string, string>();
-  private activityIdMultiInstanceBody = new Map<string, void>();
 
   @Input() taskid!: string;
 
@@ -55,52 +54,36 @@ export class TaskActivityComponent implements OnInit {
       : user.firstName;
   }
 
-  getSubProcessActivityId(parentActivityInstanceId: string) {
-    return parentActivityInstanceId.split(":")[0];
-  }
-
-  getSubProcessActivityName(activity: Activity) {
-    const subProcessActivityName = this.subProcessActivityName.get(
-      this.getSubProcessActivityId(activity.parentActivityInstanceId)
+  getActivityInstanceName(activity: Activity) {
+    const activityName = this.activityInstances.get(
+      activity.parentActivityInstanceId
     );
 
-    return subProcessActivityName
-      ? subProcessActivityName
-      : activity.activityName;
+    return activityName ? activityName.activityName : activity.activityName;
   }
 
-  parentActivityHasSubProcess(parentActivityInstanceId: string) {
-    return this.subProcessActivityName.has(
-      this.getSubProcessActivityId(parentActivityInstanceId)
-    );
-  }
-
-  activityIdHasMultiInstanceBody(activityId: string) {
-    return this.activityIdMultiInstanceBody.has(activityId);
-  }
-
-  getMultiInstanceBodyActivityId(activityId: string) {
-    return activityId.split("#")[0];
-  }
-
-  getParentUserTaskActivity(activity: IActivity[], currentIndex: number) {
+  getParentActivity(
+    activityType: ActivityType,
+    activity: IActivity[],
+    currentIndex: number
+  ) {
     const startIndex = currentIndex + 1;
 
     const index = activity
       .slice(startIndex)
       .findIndex(
         ({
-          activityType,
+          activityType: _activityType,
           activityId,
           parentActivityInstanceId,
-          rootProcessInstanceId,
         }) =>
-          activityType === ActivityType.userTask &&
+          activityType === _activityType &&
           activityId !== activity[currentIndex].activityId &&
           (parentActivityInstanceId ===
             activity[currentIndex].parentActivityInstanceId ||
-            rootProcessInstanceId ===
-              activity[currentIndex].parentActivityInstanceId)
+            activity[currentIndex].parentActivityInstanceId ===
+              this.activityInstances.get(parentActivityInstanceId)
+                ?.parentActivityInstanceId)
       );
 
     return index === -1 ? null : activity[index + startIndex];
@@ -135,36 +118,14 @@ export class TaskActivityComponent implements OnInit {
                       activity.activityName || activity.activityId;
 
                     switch (activity.activityType) {
-                      case ActivityType.multiInstanceBody: {
-                        const activityId = this.getMultiInstanceBodyActivityId(
-                          activity.activityId
-                        );
-
-                        if (activityId) {
-                          this.activityIdMultiInstanceBody.set(activityId);
-                        }
-
-                        break;
-                      }
-
+                      case ActivityType.multiInstanceBody:
                       case ActivityType.subProcess: {
-                        this.subProcessActivityName.set(
-                          activity.activityId,
-                          activity.activityName
-                        );
+                        this.activityInstances.set(activity.id, activity);
 
                         break;
                       }
 
                       case ActivityType.userTask: {
-                        const activityId = this.getMultiInstanceBodyActivityId(
-                          activity.activityId
-                        );
-
-                        if (activityId) {
-                          this.activityIdMultiInstanceBody.set(activityId);
-                        }
-
                         return this.userService
                           .findOneUserById(activity.assignee)
                           .pipe(
@@ -189,26 +150,7 @@ export class TaskActivityComponent implements OnInit {
                 tap((activity) => {
                   this.loading = false;
                   this.hasNextPage = activity.length === this.maxResults;
-                  this.activity = this.activity
-                    .concat(activity)
-                    .sort(
-                      (
-                        { endTime: asc1, startTime: asc2 },
-                        { endTime: desc1, startTime: desc2 }
-                      ) =>
-                        (desc1
-                          ? new Date(desc1)
-                          : desc2
-                          ? new Date(desc2)
-                          : new Date()
-                        ).getTime() -
-                        (asc1
-                          ? new Date(asc1)
-                          : asc2
-                          ? new Date(asc2)
-                          : new Date()
-                        ).getTime()
-                    );
+                  this.activity = this.activity.concat(activity);
                 }),
                 map(() => this.activity)
               )
