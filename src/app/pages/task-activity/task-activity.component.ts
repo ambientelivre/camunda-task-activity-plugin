@@ -54,6 +54,14 @@ export class TaskActivityComponent implements OnInit {
       : user.firstName;
   }
 
+  getActivityInstanceName(activity: Activity) {
+    const activityName = this.activityInstances.get(
+      activity.parentActivityInstanceId
+    );
+
+    return activityName ? activityName.activityName : activity.activityName;
+  }
+
   getParentActivity(
     activityType: ActivityType,
     activity: IActivity[],
@@ -68,14 +76,11 @@ export class TaskActivityComponent implements OnInit {
           activityType: _activityType,
           activityId,
           parentActivityInstanceId,
-          rootProcessInstanceId,
         }) =>
           activityType === _activityType &&
           activityId !== activity[currentIndex].activityId &&
           (parentActivityInstanceId ===
             activity[currentIndex].parentActivityInstanceId ||
-            rootProcessInstanceId ===
-              activity[currentIndex].parentActivityInstanceId ||
             activity[currentIndex].parentActivityInstanceId ===
               this.activityInstances.get(parentActivityInstanceId)
                 ?.parentActivityInstanceId)
